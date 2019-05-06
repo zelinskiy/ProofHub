@@ -44,3 +44,13 @@ npm-debug.log
 /mobile/captures
 .externalNativeBuild
 /mobile/app/src/main/java
+
+
+elm-stuff
+node_modules
+dist
+.DS_Store
+bundle.js
+app.css.map
+Junk.elm
+
