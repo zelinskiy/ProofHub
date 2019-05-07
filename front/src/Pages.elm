@@ -1,7 +1,9 @@
-module Pages exposing (Page(..))
+module Pages exposing (Page(..), LoginViewMode(..))
 
+type LoginViewMode = LoginMode
+                   | RegisterMode
 
-type Page = LoginViewPage
+type Page = LoginViewPage LoginViewMode
           | DashboardPage
           | ProjectBrowserPage
           | ProofViewPage

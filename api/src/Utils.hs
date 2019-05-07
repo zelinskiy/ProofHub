@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 {-# OPTIONS_GHC -fno-warn-warnings-deprecations #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeFamilies #-}
+
 module Utils where
 
 import Database.Persist.Sql
@@ -35,7 +37,7 @@ db q = lift ask >>= liftIO . runSqlPersistMPool q
 db2 q = ask >>= liftIO . runSqlPersistMPool q
 
 hash :: String -> String
-hash = BS.unpack . SHA256.hash . BS.pack
+hash = BS.unpack . BS.take 20 . SHA256.hash . BS.pack
 
 enterRole p = return $ checkRole p
 

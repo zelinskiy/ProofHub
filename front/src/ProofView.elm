@@ -1,7 +1,7 @@
 module ProofView exposing (Message(..), update, view)
 
 import Model exposing (Model)
-import Pages exposing (Page(..))
+import Pages exposing (..)
 
 import Html exposing (..)
 import Html.Events exposing (..)
@@ -19,4 +19,4 @@ update msg model =
             (model, Cmd.none)
 
 view : Model -> Html Message
-view model = p [ onClick <| SwitchPage LoginViewPage ] [ text "ProofView" ]
+view model = p [ onClick <| SwitchPage <| LoginViewPage LoginMode ] [ text "ProofView" ]

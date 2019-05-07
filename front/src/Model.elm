@@ -5,10 +5,16 @@ import Pages exposing (..)
 type alias Model =
     { debug : String
     , openedPage : Page
+    , userEmail : String
+    , userPassword : String
+    , passwordConfirmation : String
     }
 
 defaultModel : Model
 defaultModel =
     { debug = ""
-    , openedPage = LoginViewPage
+    , openedPage = LoginViewPage LoginMode
+    , userEmail = "admin"
+    , userPassword = "administrator1"
+    , passwordConfirmation = "administrator1"
     }

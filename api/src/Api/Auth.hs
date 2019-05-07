@@ -46,7 +46,7 @@ publicServer cs jwts (Login e p) = do
        if userPassword (entityVal usr) == hash p
        then liftIO $ acceptLogin cs jwts usr
        else throwError $ err401
-            { errBody = "Incorrect password" }
+            { errBody = BS.pack $ "Incorrect password " ++ userPassword (entityVal usr) ++ " /= " ++ hash p }
   mbJwt <- case mUsr of
     Nothing -> return $ Right ""
     Just u -> liftIO $ makeJWT u jwts Nothing

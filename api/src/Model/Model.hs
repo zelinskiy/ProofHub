@@ -20,7 +20,7 @@ share [ mkPersist sqlSettings
       , mkDeleteCascade sqlSettings
       , mkMigrate "migrateAll"]
   [persistLowerCase|
-User json
+User sql=users json
     email String
     password String
     role UserRole

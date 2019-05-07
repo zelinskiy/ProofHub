@@ -20,6 +20,7 @@ library
                      , Utils
                      , JsonModel
                      , Api.Auth
+                     , Api.User
                      , Api.Main
                      , Model.Model
                      , Model.UserRole
@@ -66,14 +67,14 @@ library
                      , word8
   ghc-options:       -Wall
                      -fno-warn-unused-do-bind
-  default-extensions: OverloadedStrings
-                      TypeFamilies
-                      TypeOperators
+  default-extensions: TypeOperators
                       DataKinds
                       FlexibleContexts
                       ScopedTypeVariables
                       DeriveGeneric
-  default-language:    Haskell2010
+                      OverloadedStrings
+                      TypeFamilies                      
+  default-language:   Haskell2010
 
 executable ProofHub-exe
   hs-source-dirs:      app
@@ -92,8 +93,7 @@ test-suite ProofHub-test
                      , hspec
                      , hspec-wai
                      , hspec-wai-json
-                     , aeson                     
-                     
+                     , aeson  
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 

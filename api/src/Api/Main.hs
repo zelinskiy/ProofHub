@@ -5,6 +5,7 @@ import Servant
 import Servant.Auth.Server
 
 import qualified Api.Auth
+import qualified Api.User
 
 import Model
 import Utils
@@ -16,9 +17,11 @@ type API =
 type PublicApi =
        "greeting" :> Get '[JSON] String
   :<|> "jwt"      :> Api.Auth.PublicAPI
+  :<|> "user"     :> Api.User.PublicAPI
 
 type PrivateApi =
        "admin"      :> Get '[JSON] String
+  :<|> "user"       :> Api.User.API
   
 server :: ConnectionPool
        -> CookieSettings
@@ -34,6 +37,7 @@ publicServer :: ConnectionPool
 publicServer p c jwt = hoistServer (Proxy :: Proxy PublicApi) (publicToNormalH p) $
        return "Greetings!"
   :<|> Api.Auth.publicServer c jwt
+  :<|> Api.User.publicServer
 
 privateServer :: ConnectionPool
               -> AuthResult (Entity User)
@@ -41,4 +45,5 @@ privateServer :: ConnectionPool
 privateServer p (Authenticated u) =
   hoistServer (Proxy :: Proxy PrivateApi) (publicToNormalH p . privateToPublicH u) $
        return "Hello admin!"
+       :<|> Api.User.server
 privateServer _ _ = throwAll err401
