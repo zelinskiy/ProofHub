@@ -53,4 +53,6 @@ publicServer = register
       else db2 $ insert $ User
            { userEmail = e
            , userPassword = hash p
-           , userRole = Normal }
+           , userRole = Normal
+           , userAvatarPath = ""
+           }

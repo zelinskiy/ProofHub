@@ -24,6 +24,47 @@ User sql=users json
     email String
     password String
     role UserRole
+    avatarPath String
     Primary email
+    deriving Eq Show
+Project json
+    title String
+    added UTCTime
+    updated UTCTime
+    prover Prover
+    longDescription String
+    shortDescription String
+    deriving Eq Show
+Directory json
+    title String
+    parentDirectory Directory Maybe 
+    project Project
+    deriving Eq Show
+Proof json
+    title String
+    text String
+    longDescription String
+    shortDescription String
+    directory Directory
+    deriving Eq Show
+ProofAuthor json
+    user UserId
+    project ProjectId
+    owner Bool
+    Primary user project
+    deriving Eq Show
+Prover json
+    title String
+    version String
+    Primary title version
+    deriving Eq Show
+Category json
+    title String
+    description String
+    Primary title
+    deriving Eq Show
+Comment json
+    text String
+    proof Proof
     deriving Eq Show
 |]

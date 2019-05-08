@@ -23,7 +23,8 @@ import qualified Api.Main
 sudo apt-get install postgresql-10 libpq-dev postgresql-client-10
 sudo -u postgres createuser -se test
 sudo -u postgres psql -c "alter role test with password 'test'"
-sudo -u postgres psql -c "create database perservant"
+sudo -u postgres psql -c "create database test"
+psql -U test -d test
 -}
 
 {-
@@ -33,7 +34,7 @@ curl -v --header "Authorization: Bearer $(cat kek.txt | tr -d '"')" http://local
 -}
 
 postgresqlConnString :: BS.ByteString
-postgresqlConnString = "host=localhost port=5432 user=test dbname=perservant password=test"
+postgresqlConnString = "host=localhost port=5432 user=test dbname=test password=test"
 
 port :: Int
 port = 8080
