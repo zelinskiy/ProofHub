@@ -2,6 +2,12 @@ module Utils exposing (..)
 
 import Http
 
+-- "Lenses"
+updLoginView model f =
+    { model | loginView = f model.loginView }
+updUser model f =
+    { model | user = f model.user }
+
 errorToString : Http.Error -> String
 errorToString error =
     case error of

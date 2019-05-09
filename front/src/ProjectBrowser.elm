@@ -26,6 +26,12 @@ view model =
                 , value "Return"
                 , onClick <| SwitchPage DashboardPage
                 ] []
+        , input [ type_ "button"
+                , value "Add directory"
+                ] []
+        , input [ type_ "button"
+                , value "Add proof"
+                ] []
         , br [] []
         , b [] [ text "Directory1" ]
         , input [ type_ "button"

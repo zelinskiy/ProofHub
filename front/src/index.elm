@@ -45,7 +45,7 @@ update msg model =
 view : Model -> Html Message
 view model =
     case model.openedPage of
-        LoginViewPage _ ->
+        LoginViewPage ->
             Html.map LoginViewMessage <| LoginView.view model
         DashboardPage ->
             Html.map DashboardMessage <| Dashboard.view model

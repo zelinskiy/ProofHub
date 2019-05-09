@@ -29,8 +29,7 @@ view model =
             ]
         leftCol =
             div ([] ++ centeredAtrs)
-                [ img [ src <| Settings.settings.server
-                            ++ "/static/avatars/default.png"
+                [ img [ src model.user.avatarPath
                       , style "width" "100px"
                       ]
                       []
@@ -41,6 +40,10 @@ view model =
                 , br [] []
                 , input [ type_ "button"
                         , value "Edit/Save"
+                        ] []
+                , input [ type_ "button"
+                        , value "Log out"
+                        , onClick <| SwitchPage LoginViewPage
                         ] []
                 , hr [] []
                 , input [ type_ "button"

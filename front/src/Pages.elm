@@ -3,7 +3,7 @@ module Pages exposing (Page(..), LoginViewMode(..))
 type LoginViewMode = LoginMode
                    | RegisterMode
 
-type Page = LoginViewPage LoginViewMode
+type Page = LoginViewPage
           | DashboardPage
           | ProjectBrowserPage
           | ProofViewPage

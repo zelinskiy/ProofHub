@@ -13,6 +13,7 @@ import Process
 import Task
 import Json.Encode as Json
 
+
 type Message
     = UpdateSomething String
     | SwitchPage Page
@@ -27,36 +28,45 @@ type Message
 
 update : Message -> Model -> (Model, Cmd Message)
 update msg model =
-    case msg of
+    let loginData =
+            Json.object [ ("email", Json.string model.user.email)
+                        , ("pass", Json.string model.user.password)
+                        ]
+    in case msg of
         UpdateSomething val ->
             (model, Cmd.none)
         SwitchPage _ ->
             -- Leave it empty - this is handled on the higher level
             (model, Cmd.none)
         SwitchMode m ->
-            ({ model | openedPage = LoginViewPage m }, Cmd.none)
+            (updLoginView model
+                 <| \l -> { l | mode = m }
+            , Cmd.none)
         UpdateUserEmail val ->
-            ({ model | userEmail = val }, Cmd.none)
+            (updUser model
+                 <| \u -> { u | email = val }
+            , Cmd.none)
         UpdateUserPassword val ->
-            ({ model | userPassword = val }, Cmd.none)
+            (updUser model
+                 <| \u -> { u | password = val }
+            , Cmd.none)
         UpdatePasswordConfirmation val ->
-            ({ model | passwordConfirmation = val }, Cmd.none)            
+            (updLoginView model
+                 <| \l -> { l | passConfirmation = val }
+            , Cmd.none)            
         Register ->
-            let body = Json.object [ ("email", Json.string model.userEmail)
-                                   , ("pass", Json.string model.userPassword)
-                                   ]
-                cmd = Http.request
+            let cmd = Http.request
                       { method = "POST"
                       , headers = []
                       , url = settings.server ++ "/public/user/register"
-                      , body = Http.jsonBody body
+                      , body = Http.jsonBody loginData
                       , expect = Http.expectString Registered
                       , timeout = Nothing
                       , tracker = Nothing
                       }
-            in if model.userPassword /= model.passwordConfirmation
+            in if model.user.password /= model.loginView.passConfirmation
                then ({ model | debug = "Passwords do not match" }, Cmd.none)
-               else if String.length model.userPassword < 7
+               else if String.length model.user.password < 7
                     then ({ model | debug = "Password must be at least 7 characters long" }, Cmd.none)
                     else (model, cmd)
         Registered (Ok res) ->
@@ -64,41 +74,45 @@ update msg model =
         Registered (Err e) ->
             ({ model | debug = errorToString e }, Cmd.none)
         Login ->
-            let body = Json.object [ ("email", Json.string model.userEmail)
-                                   , ("pass", Json.string model.userPassword)
-                                   ]
-                cmd = Http.request
+            let cmd = Http.request
                       { method = "POST"
                       , headers = []
                       , url = settings.server ++ "/public/jwt/login"
-                      , body = Http.jsonBody body
+                      , body = Http.jsonBody loginData
                       , expect = Http.expectString Logged
                       , timeout = Nothing
                       , tracker = Nothing
                       }
-            -- in (model, cmd)
-            in (model, Cmd.batch [ Process.sleep 50
-                                 |> Task.perform (\_ -> SwitchPage DashboardPage)
-                                 ])
+            in (model, cmd)
         Logged (Ok res) ->
-            ({ model | debug = res }, Cmd.none)
+            let cmd =
+                    Process.sleep 50
+                    |> Task.perform (\_ -> SwitchPage DashboardPage)
+                jwt = String.dropRight 1 <| String.dropLeft 1 res
+            in ({ model | debug = jwt, jwtToken = jwt }, Cmd.batch [ cmd ])
         Logged (Err e) ->
             ({ model | debug = errorToString e }, Cmd.none)
 
 view : Model -> Html Message
 view model =
     let variativePart =
-            case model.openedPage of
-                LoginViewPage LoginMode ->
-                    [ button [ onClick Login ] [ text "Login" ]
-                    , button [ onClick <| SwitchMode RegisterMode ] [ text "Go to register" ]
+            case model.loginView.mode of
+                LoginMode ->
+                    [ button
+                          [ onClick Login ]
+                          [ text "Login" ]
+                    , button
+                          [ onClick <| SwitchMode RegisterMode ]
+                          [ text "Go to register" ]
                     ]
-                LoginViewPage RegisterMode ->
-                    [ input [ onInput UpdatePasswordConfirmation, value model.passwordConfirmation ] []
+                RegisterMode ->
+                    [ input [ onInput UpdatePasswordConfirmation
+                            , value model.loginView.passConfirmation ] []
                     , button [ onClick Register ] [ text "Register" ]
                     , button [ onClick <| SwitchMode LoginMode ] [ text "Go to Login" ]
                     ]
-                _ -> []
-    in div [] <| [ input [ onInput UpdateUserEmail, value model.userEmail ] []
-                 , input [ onInput UpdateUserPassword, value model.userPassword ] []
+    in div [] <| [ input [ onInput UpdateUserEmail
+                         , value model.user.email ] []
+                 , input [ onInput UpdateUserPassword
+                         , value model.user.password ] []
                  ] ++ variativePart
