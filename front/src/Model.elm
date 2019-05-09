@@ -13,7 +13,7 @@ type alias Model =
 defaultModel : Model
 defaultModel =
     { debug = ""
-    , openedPage = LoginViewPage LoginMode
+    , openedPage = DashboardPage -- LoginViewPage LoginMode
     , userEmail = "admin"
     , userPassword = "administrator1"
     , passwordConfirmation = "administrator1"

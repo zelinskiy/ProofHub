@@ -5,6 +5,7 @@ import Pages exposing (Page(..))
 
 import Html exposing (..)
 import Html.Events exposing (..)
+import Html.Attributes exposing (..)
 
 type Message
     = UpdateSomething String
@@ -19,4 +20,34 @@ update msg model =
             (model, Cmd.none)
 
 view : Model -> Html Message
-view model = p [ onClick <| SwitchPage ProofViewPage ] [ text "ProjectBrowser" ]
+view model =
+    div []
+        [ input [ type_ "button"
+                , value "Return"
+                , onClick <| SwitchPage DashboardPage
+                ] []
+        , br [] []
+        , b [] [ text "Directory1" ]
+        , input [ type_ "button"
+                , value "Edit"
+                ] []
+        , input [ type_ "button"
+                , value "Remove"
+                ] []
+        , br [] []
+        , input [ value "Directory2" ] []
+        , input [ type_ "button"
+                , value "Edit"
+                ] []
+        , input [ type_ "button"
+                , value "Remove"
+                ] []
+        , br [] []
+        , b [ onClick <| SwitchPage ProofViewPage
+            ] [ text "Proof1" ]
+        , br [] []
+        , b [ onClick <| SwitchPage ProofViewPage
+            ] [ text "Proof2" ]
+        , br [] []
+        ]
+          

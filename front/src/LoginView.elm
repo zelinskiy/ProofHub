@@ -9,6 +9,8 @@ import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
 import Http
+import Process
+import Task
 import Json.Encode as Json
 
 type Message
@@ -74,7 +76,10 @@ update msg model =
                       , timeout = Nothing
                       , tracker = Nothing
                       }
-            in (model, cmd)
+            -- in (model, cmd)
+            in (model, Cmd.batch [ Process.sleep 50
+                                 |> Task.perform (\_ -> SwitchPage DashboardPage)
+                                 ])
         Logged (Ok res) ->
             ({ model | debug = res }, Cmd.none)
         Logged (Err e) ->

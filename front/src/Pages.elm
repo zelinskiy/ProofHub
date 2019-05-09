@@ -7,3 +7,4 @@ type Page = LoginViewPage LoginViewMode
           | DashboardPage
           | ProjectBrowserPage
           | ProofViewPage
+          | ProjectViewPage

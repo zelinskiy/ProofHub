@@ -10,6 +10,7 @@ import LoginView
 import Dashboard
 import ProjectBrowser 
 import ProofView
+import ProjectView
 
 update : Message -> Model -> (Model, Cmd Message)
 update msg model =
@@ -22,15 +23,24 @@ update msg model =
             ({ model | openedPage = p }, Cmd.none)
         ProofViewMessage (ProofView.SwitchPage p) ->
             ({ model | openedPage = p }, Cmd.none)
+        ProjectViewMessage (ProjectView.SwitchPage p) ->
+            ({ model | openedPage = p }, Cmd.none)
                 
         LoginViewMessage m ->
-            Tuple.mapSecond (Cmd.map LoginViewMessage) <| LoginView.update m model
+            Tuple.mapSecond (Cmd.map LoginViewMessage)
+                <| LoginView.update m model
         DashboardMessage m ->
-            Tuple.mapSecond (Cmd.map DashboardMessage) <| Dashboard.update m model
+            Tuple.mapSecond (Cmd.map DashboardMessage)
+                <| Dashboard.update m model
         ProjectBrowserMessage m ->
-            Tuple.mapSecond (Cmd.map ProjectBrowserMessage) <| ProjectBrowser.update m model
+            Tuple.mapSecond (Cmd.map ProjectBrowserMessage)
+                <| ProjectBrowser.update m model
         ProofViewMessage m ->
-            Tuple.mapSecond (Cmd.map ProofViewMessage) <| ProofView.update m model
+            Tuple.mapSecond (Cmd.map ProofViewMessage)
+                <| ProofView.update m model
+        ProjectViewMessage m ->
+            Tuple.mapSecond (Cmd.map ProjectViewMessage)
+                <| ProjectView.update m model
 
 view : Model -> Html Message
 view model =
@@ -43,6 +53,8 @@ view model =
             Html.map ProjectBrowserMessage <| ProjectBrowser.view model
         ProofViewPage ->
             Html.map ProofViewMessage <| ProofView.view model
+        ProjectViewPage ->
+            Html.map ProjectViewMessage <| ProjectView.view model
 
 main : Program () Model Message
 main =

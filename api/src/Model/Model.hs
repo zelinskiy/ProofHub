@@ -31,32 +31,36 @@ Project json
     title String
     added UTCTime
     updated UTCTime
-    prover Prover
+    proverId ProverId
     longDescription String
     shortDescription String
     deriving Eq Show
 Directory json
     title String
-    parentDirectory Directory Maybe 
-    project Project
+    parentDirectoryId DirectoryId Maybe 
+    projectId ProjectId
     deriving Eq Show
 Proof json
     title String
     text String
     longDescription String
     shortDescription String
-    directory Directory
+    directoryId DirectoryId
     deriving Eq Show
-ProofAuthor json
-    user UserId
-    project ProjectId
+ProjectAuthor json
+    userId UserId
+    projectId ProjectId
     owner Bool
-    Primary user project
+    Primary userId projectId
+    deriving Eq Show
+ProjectCategory json
+    projectId ProjectId
+    categoryId CategoryId
+    Primary projectId categoryId
     deriving Eq Show
 Prover json
     title String
-    version String
-    Primary title version
+    Primary title
     deriving Eq Show
 Category json
     title String
@@ -65,6 +69,7 @@ Category json
     deriving Eq Show
 Comment json
     text String
-    proof Proof
+    proofId ProofId
+    userId UserId
     deriving Eq Show
 |]
