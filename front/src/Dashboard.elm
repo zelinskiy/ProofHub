@@ -1,34 +1,180 @@
-module Dashboard exposing (Message(..), update, view)
+module Dashboard exposing (Message(..), update, view, init)
 
-import Model exposing (Model)
+import Model exposing (..)
 import Pages exposing (Page(..))
 import Settings exposing (..)
+import Utils exposing (..)
+import Encoders exposing (..)
+import Decoders exposing (..)
 
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
+import Http
+import Json.Decode as Decode
 
 type Message 
     = UpdateSomething String
     | SwitchPage Page
-
+    | LoadProjects
+    | LoadedProjects (Result Http.Error String)
+    | LoadProvers
+    | LoadedProvers (Result Http.Error String)
+    | LoadCategories
+    | LoadedCategories (Result Http.Error String)
+    | EditProject Project
+    | UpdateNewCategoryTitle String
+    | UpdateNewCategoryDescription String    
+    | UpdateNewProverTitle String
+    | AddNewCategory
+    | AddedNewCategory (Result Http.Error String)
+    | AddNewProver
+    | AddedNewProver (Result Http.Error String)
+    | RemoveCategory Category
+    | RemovedCategory Category (Result Http.Error String)
+    | RemoveProver Prover
+    | RemovedProver Prover (Result Http.Error String)
+    | AddNewProject
+    | AddSelectedCategory String
+    | RemoveSelectedCategory String
+    | AddSelectedProver String
+    | RemoveSelectedProver String
+      
 update : Message -> Model -> (Model, Cmd Message)
-update msg model =
+update msg m =
     case msg of
         UpdateSomething val ->
-            (model, Cmd.none)
+            (m, Cmd.none)
         SwitchPage _ ->
-            (model, Cmd.none)        
+            (m, Cmd.none)
+        LoadProjects ->
+            let cmd = get m "/private/project/search" [] LoadedProjects
+            in (m, cmd)
+        LoadedProjects (Ok res) ->
+            decodeHandler m (Decode.list projectDecoder) res (\x ps -> { x | projects = ps })
+        LoadedProjects (Err e) ->
+            errHandler m e
+        LoadProvers ->
+            let cmd = get m "/private/prover/list" [] LoadedProvers
+            in (m, cmd)
+        LoadedProvers (Ok res) ->
+            decodeHandler m (Decode.list proverDecoder) res (\x ps -> { x | provers = ps })
+        LoadedProvers (Err e) ->
+            errHandler m e
+        LoadCategories ->
+            let cmd = get m "/private/category/list" [] LoadedCategories
+            in (m, cmd)
+        LoadedCategories (Ok res) ->
+            decodeHandler m (Decode.list categoryDecoder) res (\x cs -> { x | categories = cs })
+        LoadedCategories (Err e) ->
+            errHandler m e                
+        EditProject p ->
+            let m_ = { m | project = p }
+            in (m_, fire <| SwitchPage ProjectViewPage )
+        UpdateNewCategoryTitle val ->
+            ( { m | dashboard = m.dashboard
+              |> \d -> { d | newCategory = d.newCategory
+                       |> \c -> { c | title = val } }
+              }
+            , Cmd.none)
+        UpdateNewCategoryDescription val ->
+            ({ m | dashboard = m.dashboard
+              |> \d -> { d | newCategory = d.newCategory
+                       |> \c -> { c | description = val } }
+              }, Cmd.none)
+        UpdateNewProverTitle val ->
+            ({ m | dashboard = m.dashboard
+              |> \d -> { d | newProver = d.newProver
+                       |> \c -> { c | title = val } }
+              }, Cmd.none)
+        AddNewProver ->
+            let cmd = post m "/private/prover/new"
+                      (encodeProver m.dashboard.newProver)
+                          AddedNewProver
+            in (m, cmd)
+        AddNewCategory ->
+            let cmd = post m "/private/category/new"
+                      (encodeCategory m.dashboard.newCategory)
+                          AddedNewCategory
+            in (m, cmd)
+        AddedNewCategory (Ok _) ->
+            ({ m | categories = m.dashboard.newCategory :: m.categories }, Cmd.none)
+        AddedNewProver (Ok _)->
+            ({ m | provers = m.dashboard.newProver :: m.provers }, Cmd.none)
+        AddedNewCategory (Err e) ->
+            errHandler m e
+        AddedNewProver (Err e)->
+            errHandler m e
+        RemoveProver p ->
+            let cmd = delete m ("/private/prover/delete/" ++ p.title)
+                      (RemovedProver p)
+            in (m, cmd)
+        RemoveCategory c ->
+            let cmd = delete m ("/private/category/delete/" ++ c.title)
+                      (RemovedCategory c)
+            in (m, cmd)
+        RemovedCategory c (Ok _) ->
+            ({ m | categories = List.filter (\x -> x.title /= c.title) m.categories }, Cmd.none)
+        RemovedProver p (Ok _)->
+            ({ m | provers = List.filter (\x -> x.title /= p.title) m.provers }, Cmd.none)
+        RemovedCategory _ (Err e) ->
+            errHandler m e
+        RemovedProver _ (Err e)->
+            errHandler m e
+        AddNewProject ->
+            ({ m | project = defaultProject }, fire <| SwitchPage ProjectViewPage)
+        AddSelectedCategory val ->
+            ({ m | dashboard = m.dashboard
+             |> \d -> { d | selectedCategoriesTitles = d.selectedCategoriesTitles ++ [val] }
+             }, Cmd.none)
+        RemoveSelectedCategory val ->
+            ({ m | dashboard = m.dashboard
+             |> \d -> { d | selectedCategoriesTitles = List.filter (\x -> x /= val) d.selectedCategoriesTitles }
+             }, Cmd.none)
+        AddSelectedProver val ->
+            ({ m | dashboard = m.dashboard
+             |> \d -> { d | selectedProversTitles = d.selectedProversTitles ++ [val] }
+             }, Cmd.none)
+        RemoveSelectedProver val ->
+            ({ m | dashboard = m.dashboard
+             |> \d -> { d | selectedProversTitles = List.filter (\x -> x /= val) d.selectedProversTitles }
+             }, Cmd.none)
 
 view : Model -> Html Message
 view model =
-    let centeredAtrs =
+    let proversButtons =
+            List.map (\p -> input [ type_ "button"
+                                  , value p.title
+                                  , onClick <| RemoveProver p
+                                  ] [])
+                model.provers
+            |> List.intersperse (br [] [])
+        categoriesButtons =
+            List.map (\c -> input [ type_ "button"
+                                  , value c.title
+                                  , onClick <| RemoveCategory c
+                                  ] [])
+                model.categories
+           |> List.intersperse (br [] [])
+        selectedCategoriesButtons =
+            List.map (\c -> p [] [ input [ type_ "button"
+                                         , value c
+                                         , onClick <| RemoveSelectedCategory c
+                                         ] []
+                                 ]) model.dashboard.selectedCategoriesTitles
+        selectedProversButtons =
+            List.map (\x -> p [] [ input [ type_ "button"
+                                         , value x
+                                         , onClick <| RemoveSelectedProver x
+                                         ] []
+                                 ]) model.dashboard.selectedProversTitles
+        centeredAtrs =
             [ style "margin-left" "auto"
             , style "margin-right" "auto"
             , style "text-align" "center"            
             ]
         leftCol =
-            div ([] ++ centeredAtrs)
+            div ([] ++ centeredAtrs) <|
                 [ img [ src model.user.avatarPath
                       , style "width" "100px"
                       ]
@@ -54,42 +200,80 @@ view model =
                         ] []
                 , br [] []
                 , br [] []
-                , select [ value "Prover" ] [ option [] [ text "Prover" ] ]
-                , select [ value "Version" ] [ option [] [ text "Version" ] ]
+                ] ++ selectedProversButtons ++
+                [ select [ value "Prover"
+                         , onInput AddSelectedProver
+                         ]
+                      <| (\xs -> option [] [ text "Prover" ] :: xs)
+                      <| List.map (option [] << List.singleton << text << .title)
+                      <| List.filter (\c -> not <| List.member c.title model.dashboard.selectedProversTitles)
+                      <| model.provers
                 , br [] []
                 , br [] []
-                , input [ type_ "button"
-                        , value "Category1"
-                        ] []
-                , br [] []
-                , input [ type_ "button"
-                        , value "Category2"
-                        ] []
-                , br [] []
-                , select [ value "Category3" ] [ option [] [ text "Category3" ] ]
+                ] ++ selectedCategoriesButtons ++
+                [ select [ value "Category"
+                         , onInput AddSelectedCategory
+                         ]
+                      <| (\xs -> option [] [ text "Category" ] :: xs)
+                      <| List.map (option [] << List.singleton << text << .title)
+                      <| List.filter (\c -> not <| List.member c.title model.dashboard.selectedCategoriesTitles)
+                      <| model.categories
                 , br [] []
                 , br [] []
                 , input [ value "author"
                         , autocomplete True
                         ] []
+                , br [] []
+                , hr [] []
+                , br [] []
+                ] ++ proversButtons ++
+                [ br [] []
+                , input [ value model.dashboard.newProver.title
+                        , onInput UpdateNewProverTitle
+                        ] []
+                , input [ type_ "button"
+                        , value "+"
+                        , onClick AddNewProver
+                        ] []
+                , br [] []
+                , br [] []
+                ] ++ categoriesButtons ++ 
+                [ br [] []
+                , input [ value model.dashboard.newCategory.title
+                        , onInput UpdateNewCategoryTitle
+                        ] []
+                , input [ value model.dashboard.newCategory.description
+                        , onInput UpdateNewCategoryDescription
+                        ] []
+                , input [ type_ "button"
+                        , value "+"
+                        , onClick AddNewCategory
+                        ] []
                 ]
+        projectsList =
+            let mapper proj =
+                    p [] [ span [ onClick <| SwitchPage ProjectBrowserPage
+                                ] [ text proj.title ]
+                         , input [ type_ "button"
+                                 , value "Edit"
+                                 , onClick <| EditProject proj
+                                 ] []
+                         ]
+            in model.projects
+                |> List.map mapper                                 
         rightCol =
-            div ([] ++ centeredAtrs)
+            div ([] ++ centeredAtrs) <| 
                 [ input [ value "query" ] []
                 , input [ type_ "button"
                         , value "Find"
                         ] []
                 , input [ type_ "button"
                         , value "Add"
-                        , onClick <| SwitchPage ProjectViewPage
+                        , onClick AddNewProject
                         ] []
                 , hr [] []
-                , span [ onClick <| SwitchPage ProjectBrowserPage
-                       ] [ text "Project1" ]
-                , input [ type_ "button"
-                        , value "Edit"
-                        , onClick <| SwitchPage ProjectViewPage
-                        ] []
+                ] ++ projectsList ++ 
+                [       
                 ]
     in table [] [
          tr [] [ td [ style "width" "30vw"
@@ -100,5 +284,11 @@ view model =
                     ] [ rightCol ]
                ]
         ]
-                   
+
     
+init : Cmd Message
+init =
+    Cmd.batch [ fire LoadProjects
+              , fire LoadProvers
+              , fire LoadCategories
+              ]

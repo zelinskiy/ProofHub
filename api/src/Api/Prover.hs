@@ -16,12 +16,10 @@ type API =
       :> ReqBody '[JSON] Prover
       :> Post '[JSON] (Key Prover)
     :<|> "delete"
-      :> Capture "title" String
-      :> Capture "version" String
+      :> Capture "title" (Key Prover)
       :> Delete '[JSON] ()
     :<|> "update"
-      :> Capture "title" String
-      :> Capture "version" String
+      :> Capture "title" (Key Prover)
       :> ReqBody '[JSON] Prover
       :> Post '[JSON] ()
     
@@ -32,10 +30,10 @@ server = listProvers
     :<|> updateProver
   where
     listProvers =
-      undefined
-    newProver p =
-      undefined
-    deleteProver pname pversion =
-      undefined
-    updateProver pname pversion =
-      undefined
+      db $ selectList [] []
+    newProver =
+      db . insert
+    deleteProver =
+      db . delete
+    updateProver ptitle =
+      db . replace ptitle

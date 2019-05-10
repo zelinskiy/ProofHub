@@ -14,17 +14,29 @@ import ProjectView
 
 update : Message -> Model -> (Model, Cmd Message)
 update msg model =
-    case msg of
+    let getInit p =
+            case p of
+                LoginViewPage ->
+                    Cmd.map LoginViewMessage LoginView.init
+                DashboardPage ->
+                    Cmd.map DashboardMessage Dashboard.init
+                ProjectBrowserPage ->
+                    Cmd.map ProjectBrowserMessage ProjectBrowser.init
+                ProofViewPage ->
+                    Cmd.map ProofViewMessage ProofView.init
+                ProjectViewPage ->
+                    Cmd.map ProjectViewMessage ProjectView.init
+    in case msg of
         LoginViewMessage (LoginView.SwitchPage p) ->
-            ({ model | openedPage = p }, Cmd.none)
+            ({ model | openedPage = p }, getInit p)
         DashboardMessage (Dashboard.SwitchPage p) ->
-            ({ model | openedPage = p }, Cmd.none)
+            ({ model | openedPage = p }, getInit p)
         ProjectBrowserMessage (ProjectBrowser.SwitchPage p) ->
-            ({ model | openedPage = p }, Cmd.none)
+            ({ model | openedPage = p }, getInit p)
         ProofViewMessage (ProofView.SwitchPage p) ->
-            ({ model | openedPage = p }, Cmd.none)
+            ({ model | openedPage = p }, getInit p)
         ProjectViewMessage (ProjectView.SwitchPage p) ->
-            ({ model | openedPage = p }, Cmd.none)
+            ({ model | openedPage = p }, getInit p)
                 
         LoginViewMessage m ->
             Tuple.mapSecond (Cmd.map LoginViewMessage)

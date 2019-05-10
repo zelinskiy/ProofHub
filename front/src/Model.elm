@@ -14,6 +14,48 @@ defaultLoginViewModel =
     , mode = LoginMode
     }
 
+type alias ProjectViewModel =
+    { newAuthor : String
+    }
+
+defaultProjectViewModel : ProjectViewModel
+defaultProjectViewModel =
+    { newAuthor = ""
+    }
+
+type alias DashboardModel =
+    { newProver : Prover
+    , newCategory : Category
+    , selectedProversTitles : List String
+    , selectedCategoriesTitles : List String
+    }
+
+defaultDashboardModel : DashboardModel
+defaultDashboardModel  =
+    { newProver = defaultProver
+    , newCategory = defaultCategory
+    , selectedProversTitles = []
+    , selectedCategoriesTitles = []
+    }
+
+type alias ProofViewModel =
+    { val : String
+    }
+
+defaultProofViewModel : ProofViewModel
+defaultProofViewModel =
+    { val = ""
+    }
+
+type alias ProjectBrowserModel =
+    { val : String
+    }
+
+defaultProjectBrowserModel : ProjectBrowserModel
+defaultProjectBrowserModel =
+    { val = ""
+    }
+    
 type UserRole
     = Normal
     | Moderator
@@ -39,8 +81,8 @@ defaultUser =
 type alias Project =
     { id : Int -- PK
     , title : String
-    , added : Int
-    , updated : Int
+    , added : String -- UTC format
+    , updated : String -- UTC format
     , proverId : String -- FK
     , longDescription : String
     , shortDescription : String
@@ -52,9 +94,9 @@ defaultProject : Project
 defaultProject =
     { id = -1 
     , title = "Project"
-    , added = 0
-    , updated = 0
-    , proverId = "Agda 1.5.2" 
+    , added = "2019-05-10T13:50:14Z"
+    , updated = "2019-05-10 13:50:14Z"
+    , proverId = "Agda 1.0" 
     , longDescription = "Long description"
     , shortDescription = "Short description"
     , categoriesTitles = []
@@ -64,7 +106,7 @@ defaultProject =
 type alias Directory =
     { id : Int -- PK
     , title : String
-    , parentDirectoryId : Maybe String -- FK
+    , parentDirectoryId : Maybe Int -- FK
     , projectId : Int -- FK
     }
 
@@ -135,10 +177,15 @@ type alias Model =
     { debug : String
     , openedPage : Page
     , loginView : LoginViewModel
+    , projectView : ProjectViewModel
+    , dashboard : DashboardModel
+    , projectBrowser : ProjectBrowserModel
+    , proofView : ProofViewModel
     , jwtToken : String
     , user : User
     , users : List User
     , projects : List Project
+    , project : Project
     , directories : List Directory
     , proofs : List Proof
     , provers : List Prover
@@ -151,8 +198,13 @@ defaultModel =
     { debug = ""
     , openedPage = LoginViewPage
     , loginView = defaultLoginViewModel
+    , projectView = defaultProjectViewModel
+    , dashboard = defaultDashboardModel
+    , projectBrowser = defaultProjectBrowserModel
+    , proofView = defaultProofViewModel
     , jwtToken = ""
     , user = defaultUser
+    , project = defaultProject
     , users = []
     , projects = []
     , directories = []

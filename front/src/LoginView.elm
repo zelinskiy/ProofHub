@@ -1,4 +1,4 @@
-module LoginView exposing (Message(..), update, view)
+module LoginView exposing (Message(..), update, view, init)
 
 import Model exposing (Model)
 import Pages exposing (..)
@@ -55,15 +55,7 @@ update msg model =
                  <| \l -> { l | passConfirmation = val }
             , Cmd.none)            
         Register ->
-            let cmd = Http.request
-                      { method = "POST"
-                      , headers = []
-                      , url = settings.server ++ "/public/user/register"
-                      , body = Http.jsonBody loginData
-                      , expect = Http.expectString Registered
-                      , timeout = Nothing
-                      , tracker = Nothing
-                      }
+            let cmd = post model "/public/user/register" loginData Registered
             in if model.user.password /= model.loginView.passConfirmation
                then ({ model | debug = "Passwords do not match" }, Cmd.none)
                else if String.length model.user.password < 7
@@ -74,20 +66,10 @@ update msg model =
         Registered (Err e) ->
             ({ model | debug = errorToString e }, Cmd.none)
         Login ->
-            let cmd = Http.request
-                      { method = "POST"
-                      , headers = []
-                      , url = settings.server ++ "/public/jwt/login"
-                      , body = Http.jsonBody loginData
-                      , expect = Http.expectString Logged
-                      , timeout = Nothing
-                      , tracker = Nothing
-                      }
+            let cmd = post model "/public/jwt/login" loginData Logged
             in (model, cmd)
         Logged (Ok res) ->
-            let cmd =
-                    Process.sleep 50
-                    |> Task.perform (\_ -> SwitchPage DashboardPage)
+            let cmd = delay 50 <| SwitchPage DashboardPage
                 jwt = String.dropRight 1 <| String.dropLeft 1 res
             in ({ model | debug = jwt, jwtToken = jwt }, Cmd.batch [ cmd ])
         Logged (Err e) ->
@@ -116,3 +98,7 @@ view model =
                  , input [ onInput UpdateUserPassword
                          , value model.user.password ] []
                  ] ++ variativePart
+
+init : Cmd Message
+init =
+    Cmd.batch []

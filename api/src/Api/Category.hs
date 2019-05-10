@@ -30,10 +30,10 @@ server = listCategories
     :<|> updateCategory
   where
     listCategories =
-      undefined
-    newCategory c =
-      undefined
-    deleteCategory ctitle =
-      undefined
-    updateCategory ctitle c =
-      undefined
+      db $ selectList [] []
+    newCategory =
+      db . insert
+    deleteCategory =
+      db . delete
+    updateCategory ctitle =
+      db . replace ctitle

@@ -1,4 +1,4 @@
-module ProofView exposing (Message(..), update, view)
+module ProofView exposing (Message(..), update, view, init)
 
 import Model exposing (Model)
 import Pages exposing (..)
@@ -68,3 +68,7 @@ view model =
                     ] [ rightCol ]
                ]
         ]
+
+init : Cmd Message
+init =
+    Cmd.batch []

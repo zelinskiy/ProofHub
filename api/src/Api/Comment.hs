@@ -18,7 +18,7 @@ type API =
       :> Post '[JSON] (Key Comment)
     :<|> "get"
       :> Capture "id" (Key Comment)
-      :> Get '[JSON] (Maybe (Entity Comment))
+      :> Get '[JSON] (Maybe Comment)
     :<|> "delete"
       :> Capture "id" (Key Comment)
       :> Delete '[JSON] ()
@@ -35,13 +35,13 @@ server = listComments
     :<|> updateComment
   where
     listComments pid =
-      undefined
-    newComment c =
-      undefined
-    getComment cid =
-      undefined
-    deleteComment cid =
-      undefined
-    updateComment cid c =
-      undefined
+      db $ selectList [CommentProofId ==. pid] []
+    newComment =
+      db . insert
+    getComment =
+      db . get
+    deleteComment =
+      db . delete
+    updateComment cid =
+      db . replace cid
     

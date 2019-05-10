@@ -18,7 +18,7 @@ type API =
       :> Post '[JSON] (Key Directory)
     :<|> "get"
       :> Capture "id" (Key Directory)
-      :> Get '[JSON] (Maybe (Entity Directory))
+      :> Get '[JSON] (Maybe Directory)
     :<|> "delete"
       :> Capture "id" (Key Directory)
       :> Delete '[JSON] ()
@@ -35,13 +35,13 @@ server = listDirectories
     :<|> updateDirectory
   where
     listDirectories pid =
-      undefined
-    newDirectory p =
-      undefined
-    getDirectory did =
-      undefined
-    deleteDirectory did =
-      undefined
-    updateDirectory did d =
-      undefined
+      db $ selectList [DirectoryProjectId ==. pid] []
+    newDirectory =
+      db . insert
+    getDirectory =
+      db . get
+    deleteDirectory =
+      db . delete
+    updateDirectory did =
+      db . replace did
     

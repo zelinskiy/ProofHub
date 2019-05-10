@@ -1,4 +1,4 @@
-module ProjectBrowser exposing (Message(..), update, view)
+module ProjectBrowser exposing (Message(..), update, view, init)
 
 import Model exposing (Model)
 import Pages exposing (Page(..))
@@ -57,3 +57,7 @@ view model =
         , br [] []
         ]
           
+
+init : Cmd Message
+init =
+    Cmd.batch []

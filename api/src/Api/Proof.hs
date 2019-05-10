@@ -18,7 +18,7 @@ type API =
       :> Post '[JSON] (Key Proof)
     :<|> "get"
       :> Capture "id" (Key Proof)
-      :> Get '[JSON] (Maybe (Entity Proof))
+      :> Get '[JSON] (Maybe Proof)
     :<|> "delete"
       :> Capture "id" (Key Proof)
       :> Delete '[JSON] ()
@@ -35,13 +35,13 @@ server = listProofs
     :<|> updateProof
   where
     listProofs did =
-      undefined
-    newProof p =
-      undefined
-    getProof did =
-      undefined
-    deleteProof did =
-      undefined
-    updateProof did d =
-      undefined
+      db $ selectList [ProofDirectoryId ==. did] []
+    newProof =
+      db . insert
+    getProof =
+      db . get
+    deleteProof =
+      db . delete
+    updateProof did =
+      db . replace did
     

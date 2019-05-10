@@ -20,7 +20,7 @@ type API =
       :> Post '[JSON] (Key Project)
     :<|> "get"
       :> Capture "id" (Key Project)
-      :> Get '[JSON] (Maybe (Entity Project))
+      :> Get '[JSON] (Maybe Project)
     :<|> "delete"
       :> Capture "id" (Key Project)
       :> Delete '[JSON] ()
@@ -47,17 +47,19 @@ server = searchProjects
     :<|> removeAuthor
   where
     searchProjects mbUserEmail mbCategoryName mbContainsString =
-      undefined
-    newProject p =
-      undefined
-    getProject pid =
-      undefined
-    deleteProject pid =
-      undefined
-    updateProject pid p =
-      undefined
-    addAuthor uid pid =
-      undefined
-    removeAuthor uid pid =
-      undefined
+      db $ selectList [] []
+    newProject =
+      db . insert
+    getProject =
+      db . get
+    deleteProject =
+      db . delete
+    updateProject pid = do
+      db . replace pid
+    addAuthor uid pid = do
+      db $ insert $ ProjectAuthor uid pid False
+      return ()
+    removeAuthor uid pid = do
+      db $ delete $ ProjectAuthorKey uid pid
+      return ()
     
