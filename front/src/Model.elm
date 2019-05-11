@@ -39,21 +39,23 @@ defaultDashboardModel  =
     }
 
 type alias ProofViewModel =
-    { val : String
+    { proof : Proof
+    , isEdited : Bool
     }
 
 defaultProofViewModel : ProofViewModel
 defaultProofViewModel =
-    { val = ""
+    { proof = defaultProof
+    , isEdited = False
     }
 
 type alias ProjectBrowserModel =
-    { val : String
+    { directory : Maybe Directory
     }
 
 defaultProjectBrowserModel : ProjectBrowserModel
 defaultProjectBrowserModel =
-    { val = ""
+    { directory = Nothing
     }
     
 type UserRole
@@ -108,6 +110,7 @@ type alias Directory =
     , title : String
     , parentDirectoryId : Maybe Int -- FK
     , projectId : Int -- FK
+    , isEdited : Bool -- Local
     }
 
 defaultDirectory : Directory
@@ -116,6 +119,7 @@ defaultDirectory =
     , title = "Directory"
     , parentDirectoryId = Nothing
     , projectId = -1
+    , isEdited = False
     }
 
 type alias Proof =

@@ -56,3 +56,4 @@ directoryDecoder =
         |> required "title" string
         |> required "parentDirectoryId" (nullable int)
         |> required "projectId" int
+        |> hardcoded False

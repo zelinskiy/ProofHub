@@ -39,6 +39,7 @@ type Message
     | RemoveSelectedCategory String
     | AddSelectedProver String
     | RemoveSelectedProver String
+    | OpenProject Project
       
 update : Message -> Model -> (Model, Cmd Message)
 update msg m =
@@ -139,6 +140,8 @@ update msg m =
             ({ m | dashboard = m.dashboard
              |> \d -> { d | selectedProversTitles = List.filter (\x -> x /= val) d.selectedProversTitles }
              }, Cmd.none)
+        OpenProject p ->
+             ({ m | project = p}, fire <| SwitchPage ProjectBrowserPage)
 
 view : Model -> Html Message
 view model =
@@ -252,7 +255,7 @@ view model =
                 ]
         projectsList =
             let mapper proj =
-                    p [] [ span [ onClick <| SwitchPage ProjectBrowserPage
+                    p [] [ span [ onClick <| OpenProject proj
                                 ] [ text proj.title ]
                          , input [ type_ "button"
                                  , value "Edit"
