@@ -4,6 +4,7 @@ import Model exposing (..)
 import Pages exposing (Page(..))
 import Utils exposing (..)
 import Encoders exposing (..)
+import Decoders exposing (..)
 
 import Html exposing (..)
 import Html.Events exposing (..)
@@ -11,6 +12,8 @@ import Html.Attributes exposing (..)
 import Http
 import List.Extra
 import Maybe.Extra
+import Json.Decode as Decode
+
 
 type Message
     = SwitchPage Page
@@ -18,7 +21,7 @@ type Message
     | LoadedDirectories (Result Http.Error String)
     | LoadProofs
     | LoadedProofs (Result Http.Error String)
-    | OpenDirectory Directory
+    | OpenDirectory (Maybe Directory)
     | OpenProof Proof
     | UpdateDirectoryName Int String
     | ToggleEditDirectory Int
@@ -28,6 +31,7 @@ type Message
     | AddedDirectory Directory (Result Http.Error String)
     | AddProof 
     | AddedProof Proof (Result Http.Error String)
+    | MoveDirectoryUp
 
 update : Message -> Model -> (Model, Cmd Message)
 update msg model =
@@ -35,23 +39,30 @@ update msg model =
         SwitchPage _ ->
             (model, Cmd.none)
         LoadDirectories ->
-            let route = "/private/directories/list/" ++ String.fromInt model.project.id
+            let route = "/private/directory/list/" ++ String.fromInt model.project.id
                 cmd = get model route [] LoadedDirectories
             in (model, cmd)
         LoadedDirectories (Ok res) ->
-            decodeHandler m (Decode.list directoryDecoder) res (\x ps -> { x | directories = ds })
+            decodeHandler model (Decode.list directoryDecoder) res (\x ds -> { x | directories = ds })
         LoadedDirectories (Err e) ->
             errHandler model e
         LoadProofs ->
-            (model, Cmd.none)
+            let did =
+                    model.projectBrowser.directory
+                        |> Maybe.map .id
+                        |> Maybe.withDefault (-1)
+                        |> String.fromInt 
+                route = "/private/proof/list/" ++ did
+                cmd = get model route [] LoadedProofs
+            in (model, cmd)
         LoadedProofs (Ok res) ->
-            (model, Cmd.none)
+            decodeHandler model (Decode.list proofDecoder) res (\x ps -> { x | proofs = ps })
         LoadedProofs (Err e) ->
             errHandler model e
         OpenDirectory d ->
             ( { model | projectBrowser =
-                    model.projectBrowser |> \b -> { b | directory = Just d } }
-            , Cmd.none)
+                    model.projectBrowser |> \b -> { b | directory = d } }
+            , init)
         OpenProof p ->
             ( { model | proofView =
                     model.proofView |> \pv -> { pv | proof = p } }
@@ -114,9 +125,24 @@ update msg model =
                     in (model, cmd)
         AddedProof p (Ok res) ->
             let id = Maybe.withDefault -1 <| String.toInt res
-            in ({ model | proofs = { p | id = id } :: model.proofs }, Cmd.none)
+            in ({ model | proofs = { p | id = id
+                                   , title = "Proof " ++ String.fromInt id
+                                   } :: model.proofs
+                }, Cmd.none)
         AddedProof _ (Err e) ->
             errHandler model e
+        MoveDirectoryUp ->
+            let parentDir =
+                    model.projectBrowser.directory
+                          |> Maybe.map .parentDirectoryId
+                          |> Maybe.withDefault (Just -1)
+                          |> Maybe.map (\did -> List.Extra.find (\d -> d.id == did) model.directories)
+                          |> Maybe.Extra.join
+            in case model.projectBrowser.directory of                   
+                   Just d ->
+                       (model, fire <| OpenDirectory parentDir)                       
+                   Nothing -> 
+                       (model, fire <| SwitchPage DashboardPage)
             
 
                 
@@ -124,8 +150,12 @@ view : Model -> Html Message
 view model =
     let proofs =
             model.proofs
+                |> List.filter (\p ->
+                                    Just p.directoryId
+                                    == Maybe.map .id model.projectBrowser.directory)
                 |> List.map (\pf ->
-                                 p [] [ text pf.title ])
+                                 p [ onClick <| OpenProof pf
+                                 ] [ text pf.title ])
         directories =
             model.directories
                 |> List.filter (\d ->
@@ -139,7 +169,8 @@ view model =
                                         then input [ value d.title
                                                    , onInput <| UpdateDirectoryName d.id
                                                    ] []
-                                        else text <| d.title ++ " " ++ String.fromInt d.id
+                                        else span [ onClick <| OpenDirectory <| Just d ]
+                                            [ text <| d.title ++ " " ++ String.fromInt d.id ]
                                       , input [ type_ "button"
                                               , value <| if d.isEdited then "Save" else "Edit"
                                               , onClick <| ToggleEditDirectory d.id
@@ -152,7 +183,7 @@ view model =
     in div [] <| 
         [ input [ type_ "button"
                 , value "Return"
-                , onClick <| SwitchPage DashboardPage
+                , onClick MoveDirectoryUp                                 
                 ] []
         , input [ type_ "button"
                 , value "Add directory"
@@ -161,7 +192,7 @@ view model =
         , input [ type_ "button"
                 , value "Add proof"
                 , onClick AddProof
-                , disabled <| Maybe.Extra.isJust model.projectBrowser.directory
+                , disabled <| Maybe.Extra.isNothing model.projectBrowser.directory
                 ] []
         , hr [] []
         ] ++ directories ++ 

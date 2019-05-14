@@ -41,7 +41,7 @@ server = listProofs
     getProof =
       db . get
     deleteProof =
-      db . delete
+      db . deleteCascade
     updateProof did =
       db . replace did
     

@@ -57,3 +57,22 @@ directoryDecoder =
         |> required "parentDirectoryId" (nullable int)
         |> required "projectId" int
         |> hardcoded False
+
+proofDecoder : Decoder Proof
+proofDecoder =
+    succeed Proof
+        |> required "id" int
+        |> required "title" string
+        |> required "text" string
+        |> required "longDescription" string
+        |> required "shortDescription" string
+        |> required "directoryId" int
+
+commentDecoder : Decoder Comment
+commentDecoder =
+    succeed Comment
+        |> required "id" int
+        |> required "text" string
+        |> required "proofId" int
+        |> required "userId" string
+        |> hardcoded False

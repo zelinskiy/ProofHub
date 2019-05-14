@@ -41,7 +41,7 @@ server = listComments
     getComment =
       db . get
     deleteComment =
-      db . delete
+      db . deleteCascade
     updateComment cid =
       db . replace cid
     

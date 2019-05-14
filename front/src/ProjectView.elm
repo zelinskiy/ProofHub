@@ -1,6 +1,6 @@
 module ProjectView exposing (Message(..), update, view, init)
 
-import Model exposing (Model)
+import Model exposing (..)
 import Pages exposing (..)
 import Utils exposing (..)
 import Encoders exposing (..)
@@ -35,7 +35,9 @@ update msg model =
         UpdateTitle val ->
             (updProject model <| \p -> { p | title = val }, Cmd.none)
         UpdateProver val ->
-            (updProject model <| \p -> { p | proverId = val }, Cmd.none)
+            (updProject model <| \p -> { p | proverId = if val == "Pick a prover"
+                                                        then p.proverId
+                                                        else val }, Cmd.none)
         AddCategory val ->
             (updProject model <| \p -> { p | categoriesTitles = p.categoriesTitles ++ [ val ] }, Cmd.none)
         UpdateNewAuthor val ->
@@ -64,8 +66,13 @@ update msg model =
                                  }
                 cmd = post model_ route (encodeProject model.project) Saved
             in (model, cmd)
-        Saved (Ok res) ->
-            ( { model | debug = res }, Cmd.none)
+        Saved (Ok pid) ->
+            let pid_ = Maybe.withDefault (-1) <| String.toInt pid
+                cmd = fire <| SwitchPage ProjectBrowserPage
+                model_ =
+                    updProject model
+                        <| \p -> { p | id = pid_ }
+            in (model_, cmd)
         Saved (Err e) ->
             errHandler model e
         Remove ->            
@@ -77,7 +84,9 @@ update msg model =
                                      ]
             in (model, cmd)
         Removed (Ok res) ->
-            ( { model | debug = res }, Cmd.none)
+            ( { model | project = defaultProject
+              , projects = List.filter (\p -> p.id /= model.project.id) model.projects
+              }, Cmd.none)
         Removed (Err e) ->
             errHandler model e
 
@@ -129,9 +138,12 @@ view model =
         rightCol =
             div [] <| 
                 [ select
-                      [ value model.project.proverId
+                      [ value <| if List.member model.project.proverId <| List.map .title model.provers
+                                 then model.project.proverId 
+                                 else "Pick a prover"
                       , onInput UpdateProver
-                      ] <| List.map (option [] << List.singleton << text << .title)
+                      ] <| (\opts -> option [] [ text "Pick a prover" ] :: opts)
+                      <| List.map (option [] << List.singleton << text << .title)
                       <| model.provers
                 , br [] []
                 , br [] []

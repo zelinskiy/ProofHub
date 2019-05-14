@@ -2,6 +2,15 @@
 
 This is ProofHub project.
 
+### TODO
+- [ ] Search project (+ pagination)
+- [ ] Update user info
+- [ ] Categories and authors when adding 
+- [ ] Add Gentzen view for coq (Optional)
+- [ ] Test everything
+- [ ] Add Bootstrap and make fancy
+- [ ] Add syntax highlight
+
 ### Installation
 
 * `git clone https://github.com/zelinskiy/ProofHub`

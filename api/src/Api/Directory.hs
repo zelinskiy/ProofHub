@@ -41,7 +41,7 @@ server = listDirectories
     getDirectory =
       db . get
     deleteDirectory =
-      db . delete
+      db . deleteCascade
     updateDirectory did =
       db . replace did
     

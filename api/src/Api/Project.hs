@@ -46,14 +46,20 @@ server = searchProjects
     :<|> addAuthor
     :<|> removeAuthor
   where
-    searchProjects mbUserEmail mbCategoryName mbContainsString =
-      db $ selectList [] []
-    newProject =
-      db . insert
+    searchProjects mbUserEmail mbCategoryName mbContainsString = do
+      me <- ask
+      myProjectsIds <- db $ map (projectAuthorProjectId . entityVal)
+        <$> selectList [ ProjectAuthorUserId ==. entityKey me ] []
+      db $ selectList [ ProjectId <-. myProjectsIds ] []
+    newProject p = do
+      me <- ask
+      pid <- db $ insert p
+      db $ insert $ ProjectAuthor (entityKey me) pid True
+      return pid
     getProject =
       db . get
     deleteProject =
-      db . delete
+      db . deleteCascade
     updateProject pid = do
       db . replace pid
     addAuthor uid pid = do

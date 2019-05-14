@@ -141,7 +141,7 @@ update msg m =
              |> \d -> { d | selectedProversTitles = List.filter (\x -> x /= val) d.selectedProversTitles }
              }, Cmd.none)
         OpenProject p ->
-             ({ m | project = p}, fire <| SwitchPage ProjectBrowserPage)
+             ({ m | project = p }, fire <| SwitchPage ProjectBrowserPage)
 
 view : Model -> Html Message
 view model =

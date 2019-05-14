@@ -40,13 +40,17 @@ defaultDashboardModel  =
 
 type alias ProofViewModel =
     { proof : Proof
+    , comments : List Comment
     , isEdited : Bool
+    , newComment : Comment
     }
 
 defaultProofViewModel : ProofViewModel
 defaultProofViewModel =
     { proof = defaultProof
+    , comments = []
     , isEdited = False
+    , newComment = defaultComment
     }
 
 type alias ProjectBrowserModel =
@@ -166,6 +170,7 @@ type alias Comment =
     , text : String
     , proofId : Int -- FK
     , userId : String -- FK
+    , isEdited : Bool -- Stored locally
     }
 
 defaultComment : Comment
@@ -174,6 +179,7 @@ defaultComment =
     , text = "Comment"
     , proofId = -1
     , userId = ""
+    , isEdited = False
     }
                           
              
@@ -194,7 +200,6 @@ type alias Model =
     , proofs : List Proof
     , provers : List Prover
     , categories : List Category
-    , comments : List Comment
     }
 
 defaultModel : Model
@@ -215,5 +220,4 @@ defaultModel =
     , proofs = []
     , provers = []
     , categories = []
-    , comments = []
     }
