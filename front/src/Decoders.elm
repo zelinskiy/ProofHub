@@ -1,7 +1,7 @@
 module Decoders exposing (..)
 
 import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (required, optional, hardcoded)
+import Json.Decode.Pipeline exposing (required, requiredAt, optional, hardcoded)
 
 import Model exposing (..)
 
@@ -35,20 +35,26 @@ proverDecoder : Decoder Prover
 proverDecoder =
     succeed Prover
         |> required "title" string
-
+           
 projectDecoder : Decoder Project
 projectDecoder =
-    succeed Project
-        |> required "id" int
-        |> required "title" string
-        |> required "added" string
-        |> required "updated" string
-        |> required "proverId" string
-        |> required "longDescription" string
-        |> required "shortDescription" string
-        |> hardcoded []
-        |> hardcoded []
-
+    field "authors" (list string)
+        |> andThen (\authors ->
+                        field "categories" (list string)
+                   |> andThen (\categories -> 
+                                   succeed Project
+                              |> requiredAt ["project", "id"] int
+                              |> requiredAt ["project", "title"] string
+                              |> requiredAt ["project", "added"] string
+                              |> requiredAt ["project", "updated"] string
+                              |> requiredAt ["project", "proverId"] string
+                              |> requiredAt ["project", "longDescription"] string
+                              |> requiredAt ["project", "shortDescription"] string
+                              |> hardcoded authors
+                              |> hardcoded categories
+                              )
+                   )
+           
 directoryDecoder : Decoder Directory
 directoryDecoder =
     succeed Directory
@@ -57,7 +63,7 @@ directoryDecoder =
         |> required "parentDirectoryId" (nullable int)
         |> required "projectId" int
         |> hardcoded False
-
+           
 proofDecoder : Decoder Proof
 proofDecoder =
     succeed Proof

@@ -21,14 +21,20 @@ encodeRole r =
     
 encodeProject : Project -> Value
 encodeProject p =
-    object [ ("id", int p.id)
-           , ("title", string p.title)
-           , ("added", string p.added)
-           , ("updated", string p.updated)
-           , ("proverId", string p.proverId)
-           , ("longDescription", string p.longDescription)
-           , ("shortDescription", string p.shortDescription)
+    let project =
+            object [ ("id", int p.id)
+                   , ("title", string p.title)
+                   , ("added", string p.added)
+                   , ("updated", string p.updated)
+                   , ("proverId", string p.proverId)
+                   , ("longDescription", string p.longDescription)
+                   , ("shortDescription", string p.shortDescription)
            ]
+    in object [ ("project", project)
+              , ("categories", list string p.categoriesTitles)
+              , ("authors", list string p.authorsEmails)
+              ]
+    
 
 encodeDirectory : Directory -> Value
 encodeDirectory d =

@@ -84,6 +84,12 @@ defaultUser =
             ++ "/static/avatars/default.png"
     }
 
+type alias ExtProject =
+    { project : Project
+    , categories : List String
+    , authors : List String
+    }
+    
 type alias Project =
     { id : Int -- PK
     , title : String
@@ -108,6 +114,8 @@ defaultProject =
     , categoriesTitles = []
     , authorsEmails = []
     }
+
+
 
 type alias Directory =
     { id : Int -- PK

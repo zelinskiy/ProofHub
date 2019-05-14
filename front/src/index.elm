@@ -78,7 +78,7 @@ main =
                   view model
                  , css "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
                  , css "https://use.fontawesome.com/releases/v5.7.2/css/all.css"
-                 , div [] [ Markdown.toHtml [] "" {-model.debug-} ]
+                 , div [] [ Markdown.toHtml [ style "color" "gray" ] model.debug ]
                  ]
         , update = update
         , subscriptions = \m -> Sub.batch []

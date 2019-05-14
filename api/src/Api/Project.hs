@@ -5,37 +5,33 @@ import Servant
 import Data.Time.Clock
 import Control.Monad.Trans.Reader
 import Control.Monad.IO.Class
+import Control.Monad
 
 import Model
+import JsonModel
 import Utils
+
+-- TODO: abstract out boilerplate from get an search
 
 type API =
         "search"
       :> QueryParam "user" String
       :> QueryParam "category" String
       :> QueryParam "contains" String
-      :> Get '[JSON] [Entity Project]
+      :> Get '[JSON] [ExtProject]
     :<|> "new"
-      :> ReqBody '[JSON] Project
+      :> ReqBody '[JSON] ExtProject
       :> Post '[JSON] (Key Project)
     :<|> "get"
       :> Capture "id" (Key Project)
-      :> Get '[JSON] (Maybe Project)
+      :> Get '[JSON] (Maybe ExtProject)
     :<|> "delete"
       :> Capture "id" (Key Project)
       :> Delete '[JSON] ()
     :<|> "update"
       :> Capture "id" (Key Project)
-      :> ReqBody '[JSON] Project
+      :> ReqBody '[JSON] ExtProject
       :> Post '[JSON] ()
-    :<|> "author" :> "add" 
-      :> Capture "uid" (Key User)
-      :> Capture "pid" (Key Project)
-      :> Get '[JSON] ()
-    :<|> "author" :> "remove" 
-      :> Capture "uid" (Key User)
-      :> Capture "pid" (Key Project)
-      :> Get '[JSON] ()  
     
 server :: PrivateServer API
 server = searchProjects
@@ -43,29 +39,44 @@ server = searchProjects
     :<|> getProject
     :<|> deleteProject
     :<|> updateProject
-    :<|> addAuthor
-    :<|> removeAuthor
   where
     searchProjects mbUserEmail mbCategoryName mbContainsString = do
       me <- ask
       myProjectsIds <- db $ map (projectAuthorProjectId . entityVal)
         <$> selectList [ ProjectAuthorUserId ==. entityKey me ] []
-      db $ selectList [ ProjectId <-. myProjectsIds ] []
+      myProjects <- db $ selectList [ ProjectId <-. myProjectsIds ] []
+      myExtProjects <- forM myProjects $ \p -> do
+        pAuthors <- db $ map (projectAuthorUserId . entityVal)
+          <$> selectList [ ProjectAuthorProjectId ==. entityKey p ] []
+        pCats <- db $ map (projectCategoryCategoryId . entityVal)
+          <$> selectList [ ProjectCategoryProjectId ==. entityKey p ] []
+        return $ ExtProject p pAuthors pCats
+      return myExtProjects
     newProject p = do
       me <- ask
-      pid <- db $ insert p
-      db $ insert $ ProjectAuthor (entityKey me) pid True
+      pid <- db $ insert $ entityVal $ project p
+      db $ insert
+        $ ProjectAuthor (entityKey me) pid True
+      db $ insertMany
+        $ map (\e -> ProjectAuthor e pid False)
+        $ authors p
+      db $ insertMany
+        $ map (\c -> ProjectCategory pid c)
+        $ categories p
       return pid
-    getProject =
-      db . get
+    getProject pid = do
+      mbP <- db $ getEntity pid
+      case mbP of
+        Nothing -> return Nothing
+        Just p -> do
+          pAuthors <- db $ map (projectAuthorUserId . entityVal)
+                      <$> selectList [ ProjectAuthorProjectId ==. entityKey p ] []
+          pCats <- db $ map (projectCategoryCategoryId . entityVal)
+                   <$> selectList [ ProjectCategoryProjectId ==. entityKey p ] []
+          return $ Just $ ExtProject p pAuthors pCats
     deleteProject =
       db . deleteCascade
-    updateProject pid = do
-      db . replace pid
-    addAuthor uid pid = do
-      db $ insert $ ProjectAuthor uid pid False
-      return ()
-    removeAuthor uid pid = do
-      db $ delete $ ProjectAuthorKey uid pid
-      return ()
+    updateProject pid extP =
+      -- TODO: update Authors and Categories
+      db $ replace pid $ entityVal $ project extP
     
