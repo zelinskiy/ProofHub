@@ -6,10 +6,13 @@ import ProjectBrowser
 import ProofView
 import ProjectView
 
+import Time exposing (Posix)
+
 type Message = LoginViewMessage LoginView.Message
              | DashboardMessage Dashboard.Message
              | ProjectBrowserMessage ProjectBrowser.Message
              | ProofViewMessage ProofView.Message
              | ProjectViewMessage ProjectView.Message
+             | SetNow Posix
         
        

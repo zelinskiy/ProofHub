@@ -35,7 +35,7 @@ server = listComments
     :<|> updateComment
   where
     listComments pid =
-      db $ selectList [CommentProofId ==. pid] []
+      db $ selectList [CommentProofId ==. pid] [ Asc CommentId ]
     newComment =
       db . insert
     getComment =

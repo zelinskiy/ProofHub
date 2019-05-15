@@ -19,9 +19,9 @@ roleDecoder =
     string
         |> andThen (\x ->
                         case x of
-                            "admin" -> succeed Admin
-                            "moderator" -> succeed Moderator
-                            "normal" -> succeed Normal
+                            "Admin" -> succeed Admin
+                            "Moderator" -> succeed Moderator
+                            "Normal" -> succeed Normal
                             r -> fail <| "Unknown role " ++ r
                    )
            
@@ -36,8 +36,8 @@ proverDecoder =
     succeed Prover
         |> required "title" string
            
-projectDecoder : Decoder Project
-projectDecoder =
+projectDecoder : Model -> Decoder Project
+projectDecoder m =
     field "authors" (list string)
         |> andThen (\authors ->
                         field "categories" (list string)
@@ -50,8 +50,9 @@ projectDecoder =
                               |> requiredAt ["project", "proverId"] string
                               |> requiredAt ["project", "longDescription"] string
                               |> requiredAt ["project", "shortDescription"] string
-                              |> hardcoded authors
                               |> hardcoded categories
+                              |> hardcoded authors
+                              |> hardcoded (List.member m.user.email authors)
                               )
                    )
            

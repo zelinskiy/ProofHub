@@ -2,10 +2,10 @@ module Api.Project (API, server) where
 
 import Database.Persist.Postgresql
 import Servant
-import Data.Time.Clock
 import Control.Monad.Trans.Reader
-import Control.Monad.IO.Class
 import Control.Monad
+import Data.List (nub, isInfixOf)
+import Data.List.Split
 
 import Model
 import JsonModel
@@ -15,8 +15,9 @@ import Utils
 
 type API =
         "search"
-      :> QueryParam "user" String
-      :> QueryParam "category" String
+      :> QueryParam "users" String
+      :> QueryParam "categories" String
+      :> QueryParam "provers" String
       :> QueryParam "contains" String
       :> Get '[JSON] [ExtProject]
     :<|> "new"
@@ -40,11 +41,40 @@ server = searchProjects
     :<|> deleteProject
     :<|> updateProject
   where
-    searchProjects mbUserEmail mbCategoryName mbContainsString = do
-      me <- ask
-      myProjectsIds <- db $ map (projectAuthorProjectId . entityVal)
-        <$> selectList [ ProjectAuthorUserId ==. entityKey me ] []
-      myProjects <- db $ selectList [ ProjectId <-. myProjectsIds ] []
+    searchProjects mbUserEmails mbCategoryNames mbProversList mbContainsString = do
+      emailsFilter <-
+            case mbUserEmails of
+              Nothing -> return []
+              Just emails -> do
+                emailKeys <- db $ selectList [ UserEmail <-. splitOn "," emails ] []
+                return [ ProjectAuthorUserId <-. map entityKey emailKeys ]
+      catsFilter <-
+            case mbCategoryNames of
+              Nothing ->
+                return []
+              Just cats -> do
+                catsKeys <- db $ selectList [ CategoryTitle <-. splitOn "," cats ] []
+                return [ ProjectCategoryCategoryId <-. map entityKey catsKeys ]
+      proversFilter <-
+            case mbProversList of
+              Nothing ->
+                return []
+              Just provers -> do
+                proversKeys <- db $ selectList [ ProverTitle <-. splitOn "," provers ] []
+                return [ ProjectProverId <-. map entityKey proversKeys ]
+      let containsFilter (Entity _ p) =
+            case mbContainsString of
+              Nothing -> True
+              Just q -> q `isInfixOf` projectTitle p
+                || q `isInfixOf` projectShortDescription p
+      -- me <- ask
+      projects1 <- db $ map (projectAuthorProjectId . entityVal)
+        <$> selectList emailsFilter []
+      projects2 <- db $ map (projectCategoryProjectId . entityVal)
+        <$> selectList catsFilter []
+      let projectsIds = nub $ projects1 ++ projects2
+      myProjects_ <- db $ selectList ([ ProjectId <-. projectsIds ] ++ proversFilter) [ Asc ProjectAdded ]
+      let myProjects = filter containsFilter myProjects_
       myExtProjects <- forM myProjects $ \p -> do
         pAuthors <- db $ map (projectAuthorUserId . entityVal)
           <$> selectList [ ProjectAuthorProjectId ==. entityKey p ] []
@@ -76,7 +106,22 @@ server = searchProjects
           return $ Just $ ExtProject p pAuthors pCats
     deleteProject =
       db . deleteCascade
-    updateProject pid extP =
-      -- TODO: update Authors and Categories
-      db $ replace pid $ entityVal $ project extP
+    updateProject pid extP = do
+      let p = entityVal $ project extP
+      db $ deleteWhere [ProjectCategoryProjectId
+                        ==. entityKey (project extP) ]
+      db $ deleteWhere [ ProjectAuthorProjectId
+                         ==. entityKey (project extP)
+                       , ProjectAuthorOwner ==. False]
+      owner <- db $ selectFirst [ ProjectAuthorProjectId
+                                  ==. entityKey (project extP)
+                                , ProjectAuthorOwner ==. True] []
+      db $ insertMany
+        $ map (\c -> ProjectCategory pid c)
+        $ categories extP
+      db $ insertMany
+        $ map (\e -> ProjectAuthor e pid False)
+        $ filter (\e -> Just e /= (projectAuthorUserId <$> entityVal <$> owner))
+        $ authors extP
+      db $ replace pid p
     

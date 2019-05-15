@@ -35,7 +35,7 @@ server = listProofs
     :<|> updateProof
   where
     listProofs did =
-      db $ selectList [ProofDirectoryId ==. did] []
+      db $ selectList [ProofDirectoryId ==. did] [ Asc ProofTitle ]
     newProof =
       db . insert
     getProof =

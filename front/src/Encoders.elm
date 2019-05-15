@@ -15,9 +15,9 @@ encodeUser u =
 encodeRole : UserRole -> Value
 encodeRole r =
     string <| case r of
-                  Normal -> "normal"
-                  Moderator -> "moderator"
-                  Admin -> "admin"
+                  Normal -> "Normal"
+                  Moderator -> "Moderator"
+                  Admin -> "Admin"
     
 encodeProject : Project -> Value
 encodeProject p =

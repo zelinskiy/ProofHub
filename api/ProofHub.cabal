@@ -58,6 +58,7 @@ library
                      , quickcheck-instances
                      , random
                      , resourcet
+                     , split
                      , servant
                      , servant-auth
                      , servant-auth-server

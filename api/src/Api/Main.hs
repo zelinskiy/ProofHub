@@ -3,7 +3,6 @@ module Api.Main(API, server) where
 import Database.Persist.Postgresql
 import Servant
 import Servant.Auth.Server
-import Servant.Utils.StaticFiles
 
 import qualified Api.Auth
 import qualified Api.User

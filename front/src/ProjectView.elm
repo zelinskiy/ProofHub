@@ -33,28 +33,42 @@ update msg model =
         SwitchPage _ ->
             (model, Cmd.none)
         UpdateTitle val ->
-            (updProject model <| \p -> { p | title = val }, Cmd.none)
+            (updProject model <| \p ->
+                 { p | title = val }
+            , Cmd.none)
         UpdateProver val ->
-            (updProject model <| \p -> { p | proverId = if val == "Pick a prover"
-                                                        then p.proverId
-                                                        else val }, Cmd.none)
+            (updProject model <| \p ->
+                 { p | proverId = if val == "Pick a prover"
+                                  then p.proverId
+                                  else val }
+            , Cmd.none)
         AddCategory val ->
-            (updProject model <| \p -> { p | categoriesTitles = p.categoriesTitles ++ [ val ] }, Cmd.none)
+            (updProject model <| \p ->
+                 { p | categoriesTitles = p.categoriesTitles ++ [ val ] }, Cmd.none)
         UpdateNewAuthor val ->
-            (updProjectView model <| \m -> { m | newAuthor = val }
+            (updProjectView model <| \m ->
+                 { m | newAuthor = val }
             , Cmd.none)
         AddAuthor ->
-            (updProject model <| \p -> { p | authorsEmails = p.authorsEmails ++ [ model.projectView.newAuthor ] }
+            (updProject model <| \p ->
+                 { p | authorsEmails = p.authorsEmails ++ [ model.projectView.newAuthor ] }
             , Cmd.none)
         RemoveCategory val ->
-            (updProject model <| \p -> { p | categoriesTitles = List.filter (\x -> x /= val) p.categoriesTitles }, Cmd.none)
+            (updProject model <| \p ->
+                 { p | categoriesTitles = List.filter (\x -> x /= val) p.categoriesTitles }
+            , Cmd.none)
         RemoveAuthor val ->
-            (updProject model <| \p -> { p | authorsEmails = List.filter (\x -> x /= val) p.authorsEmails }
+            (updProject model <| \p ->
+                 { p | authorsEmails = List.filter (\x -> x /= val) p.authorsEmails }
             , Cmd.none)
         UpdateShortDescription val ->
-            (updProject model <| \p -> { p | shortDescription = val }, Cmd.none)
+            (updProject model <| \p ->
+                 { p | shortDescription = val }
+            , Cmd.none)
         UpdateLongDescription val ->
-            (updProject model <| \p -> { p | longDescription = val }, Cmd.none)
+            (updProject model <| \p ->
+                 { p | longDescription = val }
+            , Cmd.none)
         Save ->
             let route = if model.project.id == -1
                         then "/private/project/new"
@@ -92,7 +106,8 @@ update msg model =
 
 view : Model -> Html Message
 view model =
-    let leftCol =
+    let editable = model.project.editable
+        leftCol =
             div []
                 [ input [ type_ "button"
                         , value "Return"
@@ -101,23 +116,28 @@ view model =
                 , br [] []
                 , input [ value model.project.title
                         , onInput UpdateTitle
+                        , disabled <| not editable
                         ] []
                 , input [ type_ "button"
                         , value <| if model.project.id == -1
                                    then "Add"
                                    else "Update"
                         , onClick Save
+                        , disabled <| not editable
                         ] []
                 , input [ type_ "button"
                         , value "Remove"
                         , onClick Remove
+                        , disabled <| not editable
                         ] []
                 , br [] []
                 , input [ value model.project.shortDescription
                         , onInput UpdateShortDescription
+                        , disabled <| not editable
                         ] []
                 , br [] []
-                , textarea [ onInput UpdateLongDescription ]
+                , textarea [ onInput UpdateLongDescription
+                           , disabled <| not editable ]
                     [ text model.project.longDescription ]
                 , br [] []
                 ]
@@ -125,6 +145,7 @@ view model =
             model.project.categoriesTitles
                 |> List.map (\x -> input [ type_ "button"
                                          , onClick (RemoveCategory x)
+                                         , disabled <| not editable
                                          , value x
                                          ] [])
                 |> List.intersperse (br [] [])
@@ -132,6 +153,7 @@ view model =
             model.project.authorsEmails
                 |> List.map (\x -> input [ type_ "button"
                                          , onClick (RemoveAuthor x)
+                                         , disabled <| not editable
                                          , value x
                                          ] [])
                 |> List.intersperse (br [] [])
@@ -142,6 +164,7 @@ view model =
                                  then model.project.proverId 
                                  else "Pick a prover"
                       , onInput UpdateProver
+                      , disabled <| not editable
                       ] <| (\opts -> option [] [ text "Pick a prover" ] :: opts)
                       <| List.map (option [] << List.singleton << text << .title)
                       <| model.provers
@@ -152,6 +175,7 @@ view model =
                 , select
                       [ value "Add category"
                       , onInput AddCategory
+                      , disabled <| not editable
                       ] <| (\opts -> option [] [ text "Add category" ] :: opts)
                       <| List.map (option [] << List.singleton << text << .title)
                       <| List.filter (\c -> not <| List.member c.title model.project.categoriesTitles)

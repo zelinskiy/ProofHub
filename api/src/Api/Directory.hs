@@ -35,7 +35,7 @@ server = listDirectories
     :<|> updateDirectory
   where
     listDirectories pid =
-      db $ selectList [DirectoryProjectId ==. pid] []
+      db $ selectList [DirectoryProjectId ==. pid] [ Asc DirectoryTitle ]
     newDirectory =
       db . insert
     getDirectory =

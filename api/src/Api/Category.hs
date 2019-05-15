@@ -30,7 +30,7 @@ server = listCategories
     :<|> updateCategory
   where
     listCategories =
-      db $ selectList [] []
+      db $ selectList [] [ Asc CategoryTitle ]
     newCategory =
       db . insert
     deleteCategory =

@@ -148,7 +148,8 @@ update msg model =
                 
 view : Model -> Html Message
 view model =
-    let proofs =
+    let editable = model.project.editable
+        proofs =
             model.proofs
                 |> List.filter (\p ->
                                     Just p.directoryId
@@ -168,31 +169,35 @@ view model =
                                  p [] [ if d.isEdited
                                         then input [ value d.title
                                                    , onInput <| UpdateDirectoryName d.id
+                                                   , disabled <| not editable
                                                    ] []
                                         else span [ onClick <| OpenDirectory <| Just d ]
                                             [ text <| d.title ++ " " ++ String.fromInt d.id ]
                                       , input [ type_ "button"
                                               , value <| if d.isEdited then "Save" else "Edit"
                                               , onClick <| ToggleEditDirectory d.id
+                                              , disabled <| not editable
                                               ] []
                                       , input [ type_ "button"
                                               , value "Remove"
                                               , onClick <| RemoveDirectory d.id
+                                              , disabled <| not editable
                                               ] []
                                       ])
     in div [] <| 
         [ input [ type_ "button"
                 , value "Return"
-                , onClick MoveDirectoryUp                                 
+                , onClick MoveDirectoryUp
                 ] []
         , input [ type_ "button"
                 , value "Add directory"
                 , onClick AddDirectory
+                , disabled <| not editable
                 ] []
         , input [ type_ "button"
                 , value "Add proof"
                 , onClick AddProof
-                , disabled <| Maybe.Extra.isNothing model.projectBrowser.directory
+                , disabled <| Maybe.Extra.isNothing model.projectBrowser.directory || not editable
                 ] []
         , hr [] []
         ] ++ directories ++ 

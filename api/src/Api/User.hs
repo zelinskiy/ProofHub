@@ -16,10 +16,15 @@ import JsonModel
 import Utils
 
 type API =
-         "me"
-      :> Get '[JSON] (Entity User)
-    :<|> "unregister"
-      :> Get '[JSON] ()
+  "me"
+  :> Get '[JSON] (Entity User)
+  :<|> "unregister"
+  :> Get '[JSON] ()
+  :<|> "update"
+  :> ReqBody '[JSON] User
+  :> Post '[JSON] ()
+  :<|> "list"
+      :> Get '[JSON] [Entity User]
     
 type PublicAPI =
          "register"
@@ -30,10 +35,19 @@ server :: PrivateServer API
 server =
        getMyself
   :<|> unregister
+  :<|> updMyself
+  :<|> allUsers
   where
+    allUsers = db $ selectList [] [ Asc UserEmail ]
     getMyself = ask
     unregister = ask >>= \me -> db $ do      
       deleteCascade (entityKey me)
+    updMyself u = do
+      me <- ask
+      let myEmail = userEmail $ entityVal me
+      db $ replace (entityKey me) (u { userEmail = myEmail
+                                     , userPassword = hash $ userPassword u})
+      return ()
       
 
 publicServer :: PublicServer PublicAPI

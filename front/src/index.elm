@@ -2,6 +2,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Browser
 import Markdown
+import Time exposing (every)
 
 import Pages exposing (Page(..))
 import Model exposing (..)
@@ -27,6 +28,8 @@ update msg model =
                 ProjectViewPage ->
                     Cmd.map ProjectViewMessage ProjectView.init
     in case msg of
+        SetNow t ->
+            ({ model | now = t }, Cmd.none)
         LoginViewMessage (LoginView.SwitchPage p) ->
             ({ model | openedPage = p }, getInit p)
         DashboardMessage (Dashboard.SwitchPage p) ->
@@ -81,5 +84,7 @@ main =
                  , div [] [ Markdown.toHtml [ style "color" "gray" ] model.debug ]
                  ]
         , update = update
-        , subscriptions = \m -> Sub.batch []
+        , subscriptions = \m -> Sub.batch
+                          [ every 100 (\t -> SetNow t)
+                          ]
         }

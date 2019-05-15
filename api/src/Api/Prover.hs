@@ -30,7 +30,7 @@ server = listProvers
     :<|> updateProver
   where
     listProvers =
-      db $ selectList [] []
+      db $ selectList [] [ Asc ProverTitle ]
     newProver =
       db . insert
     deleteProver =

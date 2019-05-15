@@ -2,6 +2,7 @@ module Model exposing (..)
 
 import Settings exposing (settings)
 import Pages exposing (..)
+import Time exposing (..)
 
 type alias LoginViewModel =
     { passConfirmation : String
@@ -26,16 +27,28 @@ defaultProjectViewModel =
 type alias DashboardModel =
     { newProver : Prover
     , newCategory : Category
+    , editingUser : Bool
     , selectedProversTitles : List String
     , selectedCategoriesTitles : List String
+    , selectedUserEmails : List String
+    , queryText : String
+    , currentPage : Int
+    , projectsOnPage : Int
+    , selectedUser : String
     }
 
 defaultDashboardModel : DashboardModel
 defaultDashboardModel  =
     { newProver = defaultProver
     , newCategory = defaultCategory
+    , editingUser = False
     , selectedProversTitles = []
     , selectedCategoriesTitles = []
+    , selectedUserEmails = []
+    , currentPage = 0
+    , projectsOnPage = 10
+    , queryText = ""
+    , selectedUser = ""
     }
 
 type alias ProofViewModel =
@@ -100,6 +113,7 @@ type alias Project =
     , shortDescription : String
     , categoriesTitles : List String
     , authorsEmails : List String
+    , editable : Bool
     }
 
 defaultProject : Project
@@ -113,6 +127,7 @@ defaultProject =
     , shortDescription = "Short description"
     , categoriesTitles = []
     , authorsEmails = []
+    , editable = True
     }
 
 
@@ -208,6 +223,8 @@ type alias Model =
     , proofs : List Proof
     , provers : List Prover
     , categories : List Category
+    , zone : Zone
+    , now : Posix
     }
 
 defaultModel : Model
@@ -228,4 +245,6 @@ defaultModel =
     , proofs = []
     , provers = []
     , categories = []
+    , now = Time.millisToPosix 0
+    , zone = utc  
     }

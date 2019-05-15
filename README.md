@@ -3,13 +3,14 @@
 This is ProofHub project.
 
 ### TODO
-- [ ] Search project (+ pagination)
+- [ ] Search project
+- [x] Pagination
 - [ ] Update user info
-- [ ] Categories and authors when adding 
-- [ ] Add Gentzen view for coq (Optional)
+- [x] Categories and authors when adding and updating
 - [ ] Test everything
 - [ ] Add Bootstrap and make fancy
 - [ ] Add syntax highlight
+- [ ] Add Gentzen view for coq (Optional)
 
 ### Installation
 
