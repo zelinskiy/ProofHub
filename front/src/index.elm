@@ -12,6 +12,7 @@ import Dashboard
 import ProjectBrowser 
 import ProofView
 import ProjectView
+import Settings exposing (..)
 
 update : Message -> Model -> (Model, Cmd Message)
 update msg model =
@@ -77,11 +78,26 @@ main =
                                     , Html.Attributes.href path ] []
     in Browser.document
         { init = \_ -> (defaultModel, Cmd.none)
-        , view = \model -> Browser.Document "ProofHub" [
-                  view model
-                 , css "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-                 , css "https://use.fontawesome.com/releases/v5.7.2/css/all.css"
-                 , div [] [ Markdown.toHtml [ style "color" "gray" ] model.debug ]
+        , view = \model -> Browser.Document "ProofHub" 
+                 [ div [ style "width" "100vw"
+                       , style "height" "100vh"
+                       , style "background-image" <| 
+                           "url(\"" ++ settings.server ++ "/static/img/back.png"
+                               ++ "\")"
+                       ] [ img [ src <| settings.server ++ "/static/img/logo.png"
+                               , style "height" "15vh"
+                               , class "img-responsive center-block"
+                               ] []
+                         , view model
+                         , div [ style "text-align" "center"
+                               , style "color" "gray"
+                               , style "margin-top" "50px"
+                               , style "margin-bottom" "25px"
+                               ] [ text "Nikita Yurchenko - 2019" ]
+                         , css "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
+                         , css "https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+                         -- , span [] [ Markdown.toHtml [ style "color" "gray" ] model.debug ]
+                         ]
                  ]
         , update = update
         , subscriptions = \m -> Sub.batch

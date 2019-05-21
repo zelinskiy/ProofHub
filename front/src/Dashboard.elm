@@ -14,6 +14,10 @@ import Http
 import Json.Decode as Decode
 import Time
 import List.Extra exposing (unique)
+import Bootstrap.Forms exposing (..)
+import Bootstrap.Wells exposing (..)
+import Bootstrap.Buttons exposing (..)
+import Bootstrap.Grid exposing (..)
 
 type Message 
     = SwitchPage Page
@@ -257,32 +261,39 @@ view model =
             List.map (\p -> input [ type_ "button"
                                   , value p.title
                                   , onClick <| RemoveProver p
+                                  , class "form-control"
                                   ] [])
                 model.provers
-            |> List.intersperse (br [] [])
+            -- |> List.intersperse (br [] [])
         categoriesButtons =
             List.map (\c -> input [ type_ "button"
                                   , value c.title
                                   , onClick <| RemoveCategory c
+                                  , class "form-control"
                                   ] [])
                 model.categories
-           |> List.intersperse (br [] [])
+           -- |> List.intersperse (br [] [])
         selectedCategoriesButtons =
-            List.map (\c -> p [] [ input [ type_ "button"
+            model.dashboard.selectedCategoriesTitles 
+                |> List.map (\c -> input [ type_ "button"
                                          , value c
                                          , onClick <| RemoveSelectedCategory c
+                                         , class "form-control"
                                          ] []
-                                 ]) model.dashboard.selectedCategoriesTitles
+                            ) 
         selectedProversButtons =
-            List.map (\x -> p [] [ input [ type_ "button"
+            model.dashboard.selectedProversTitles
+                |> List.map (\x -> input [ type_ "button"
                                          , value x
                                          , onClick <| RemoveSelectedProver x
+                                         , class "form-control"
                                          ] []
-                                 ]) model.dashboard.selectedProversTitles
+                            ) 
         selectedUsersButtons =
             List.map (\x -> p [] [ input [ type_ "button"
                                          , value x
                                          , onClick <| RemoveSelectedUser x
+                                         , class "form-control"
                                          ] []
                                  ]) model.dashboard.selectedUserEmails
         centeredAtrs =
@@ -301,170 +312,260 @@ view model =
                   ++ randomString
             }
         leftCol =
-            div ([] ++ centeredAtrs) <|
-                [ img [ src <| model.user.avatarPath
-                      , style "width" "100px"
-                      ]
-                      []
-                , br [] []
-                , if model.dashboard.editingUser
-                  then Html.form [ enctype "multipart/form-data"
-                                 , action <| settings.server ++ "/file?filePath=avatars/" ++ model.user.email
-                                 , method "POST"
-                                 , target "empty_frame"
-                                 ] [ input [ name "file"
-                                           , type_ "file"
-                                           ] []
-                                   , input [ type_ "submit"
-                                           , value "Load avatar"
-                                           , onClick <| UpdateUser updAvatar ""
-                                           ] []
+            containerFluid <|
+                [ row 
+                  [ column [ Medium Twelve ] <| 
+                        [ img [ src <| model.user.avatarPath
+                              , style "width" "10vw"
+                              , class "img-responsive center-block"
                               ]
-                  else span [] []
-                , iframe [ name "empty_frame"
-                         , style "display" "none" ] []
-                , br [] []
-                , if model.dashboard.editingUser
-                  then input [ value model.user.email
-                             , onInput <| UpdateUser (\u v -> { u | email = v })
-                             ] []
-                  else p [] [ text model.user.email ]
-                , br [] []
-                , if model.dashboard.editingUser
-                  then input [ value model.user.password
-                             , onInput <| UpdateUser (\u v -> { u | password = v })
-                             ] []
-                  else p [] [ text model.user.password ]
-                , br [] []
-                , if  model.dashboard.editingUser
-                  then input [ type_ "button"
-                             , value "Save"
-                             , onClick SaveUser
-                             ] []
-                  else input [ type_ "button"
-                             , value "Edit"
-                             , onClick BeginEditingUser
-                             ] []
-                , input [ type_ "button"
-                        , value "Log out"
-                        , onClick <| SwitchPage LoginViewPage
-                        ] []
-                , hr [] []
-                , input [ type_ "button"
-                        , value "My projects"
-                        , onClick LoadMyProjects
-                        ] []
-                , input [ type_ "button"
-                        , value "All projects"
-                        , onClick LoadAllProjects
-                        ] []
-                , br [] []
-                , br [] []
-                ] ++ selectedProversButtons ++
-                [ select [ value "Prover"
-                         , onInput AddSelectedProver
-                         ]
-                      <| (\xs -> option [] [ text "Prover" ] :: xs)
-                      <| List.map (option [] << List.singleton << text << .title)
-                      <| List.filter (\c -> not <| List.member c.title model.dashboard.selectedProversTitles)
-                      <| model.provers
-                , br [] []
-                , br [] []
-                ] ++ selectedCategoriesButtons ++
-                [ select [ value "Category"
-                         , onInput AddSelectedCategory
-                         ]
-                      <| (\xs -> option [] [ text "Category" ] :: xs)
-                      <| List.map (option [] << List.singleton << text << .title)
-                      <| List.filter (\c -> not <| List.member c.title model.dashboard.selectedCategoriesTitles)
-                      <| model.categories
-                , br [] []
-                ] ++ selectedUsersButtons ++ 
-                [ br [] []
-                , input [ value model.dashboard.selectedUser
-                        , autocomplete True
-                        , onInput UpdateSelectedUserEmail
-                        ] []
-                , input [ type_ "button"
-                        , value "+"
-                        , onClick AddSelectedUser
-                        ] []
-                , br [] []
-                , hr [] []
-                , br [] []
-                ] ++ proversButtons ++
-                [ br [] []
-                , input [ value model.dashboard.newProver.title
-                        , onInput UpdateNewProverTitle
-                        ] []
-                , input [ type_ "button"
-                        , value "+"
-                        , onClick AddNewProver
-                        ] []
-                , br [] []
-                , br [] []
-                ] ++ categoriesButtons ++ 
-                [ br [] []
-                , input [ value model.dashboard.newCategory.title
-                        , onInput UpdateNewCategoryTitle
-                        ] []
-                , input [ value model.dashboard.newCategory.description
-                        , onInput UpdateNewCategoryDescription
-                        ] []
-                , input [ type_ "button"
-                        , value "+"
-                        , onClick AddNewCategory
-                        ] []
-                ]
+                              []
+                        , br [] []
+                        , if model.dashboard.editingUser
+                          then Html.form [ enctype "multipart/form-data"
+                                         , action <| settings.server ++ "/file?filePath=avatars/" ++ model.user.email
+                                         , method "POST"
+                                         , target "empty_frame"
+                                         ] [ input [ name "file"
+                                                   , type_ "file"
+                                                   , class "form-control"
+                                                   ] []
+                                           , input [ type_ "submit"
+                                                   , value "Load avatar"
+                                                   , onClick <| UpdateUser updAvatar ""
+                                                   , class "form-control"
+                                                   ] []
+                                           ]
+                          else span [] []
+                        , iframe [ name "empty_frame"
+                                 , style "display" "none" ] []
+                        , if model.dashboard.editingUser
+                          then div []
+                              [ br [] []
+                              , formInput [ value model.user.email
+                                          , onInput <| UpdateUser (\u v -> { u | email = v })
+                                          ] []
+                              , br [] []
+                              ]
+                          else well WellSmall [] [ text model.user.email ]
+                        , if model.dashboard.editingUser
+                          then div []
+                              [ formInput [ value model.user.password
+                                          , onInput <| UpdateUser (\u v -> { u | password = v })
+                                          ] []
+                              , br [] []
+                              ]
+                          else well WellSmall [] [ text model.user.password ]
+                        , containerFluid
+                            [ row
+                              [ column [ Large Six]
+                                    [ if  model.dashboard.editingUser
+                                      then btn BtnDefault
+                                          [ BtnBlock, BtnSmall ]
+                                          []
+                                          [ onClick SaveUser ]
+                                          [ text "Save" ]
+                                      else btn BtnDefault
+                                          [ BtnBlock, BtnSmall ]
+                                          []
+                                          [ onClick BeginEditingUser
+                                          ] [ text "Edit"]
+                                    ]
+                              , column [ Large Six]
+                                  [ btn BtnDefault
+                                        [ BtnBlock, BtnSmall ]
+                                        []
+                                        [ onClick <| SwitchPage LoginViewPage
+                                        ] [ text "Logout"]
+                                  ]
+                              ]
+                            ]
+                        , hr [] []
+                        , containerFluid
+                              [ row
+                                [ column [ Large Six]
+                                      [ btn BtnDefault
+                                            [ BtnBlock, BtnSmall ]
+                                            []
+                                            [ onClick LoadMyProjects
+                                            ] [ text "My"]
+                                      ]
+                                , column [ Large Six]
+                                    [ btn BtnDefault
+                                          [ BtnBlock, BtnSmall ]
+                                          []
+                                          [ onClick LoadAllProjects
+                                          ] [ text "All"]
+                                    ]
+                                ]
+                              ]
+                        , hr [] []
+                        ] ++ selectedProversButtons ++
+                        [ br [] []
+                        , select [ value "Prover"
+                                 , onInput AddSelectedProver
+                                 , class "form-control"
+                                 ]
+                              <| (\xs -> option [] [ text "Prover" ] :: xs)
+                              <| List.map (option [] << List.singleton << text << .title)
+                              <| List.filter (\c -> not <| List.member c.title model.dashboard.selectedProversTitles)
+                              <| model.provers
+                        , hr [] []
+                        ] ++ selectedCategoriesButtons ++
+                        [ br [] []
+                        , select [ value "Category"
+                                 , onInput AddSelectedCategory
+                                 , class "form-control"
+                                 ]
+                              <| (\xs -> option [] [ text "Category" ] :: xs)
+                              <| List.map (option [] << List.singleton << text << .title)
+                              <| List.filter (\c -> not <| List.member c.title model.dashboard.selectedCategoriesTitles)
+                              <| model.categories
+                        , hr [] []
+                        ] ++ selectedUsersButtons ++ 
+                        [ br [] []
+                        , div [ class "input-group" ]                               
+                            [ input [ value model.dashboard.selectedUser
+                                    , onInput UpdateSelectedUserEmail
+                                    , class "form-control"
+                                    ] []
+                            , div [ class "input-group-btn" ]
+                                [ button [ type_ "button"
+                                         , onClick AddSelectedUser
+                                         , class "form-control"
+                                         ] [ text "+" ]
+                                ]
+                            ]
+                        , hr [] []
+                        ] ++ proversButtons ++
+                        [ br [] []
+                        , div [ class "input-group" ]                               
+                            [ input [ value model.dashboard.newProver.title
+                                    , onInput UpdateNewProverTitle
+                                    , class "form-control"
+                                    ] []
+                            , div [ class "input-group-btn" ]
+                                [ button [ type_ "button"
+                                         , onClick AddNewProver
+                                         , class "form-control"
+                                         ] [ text "+" ]
+                                ]
+                            ]
+                        , hr [] []
+                        ] ++ categoriesButtons ++ 
+                        [ br [] []
+                        , div [ class "input-group" ]                               
+                            [ input [ value model.dashboard.newCategory.title
+                                    , onInput UpdateNewCategoryTitle
+                                    , class "form-control"
+                                    ] []
+                            , div [ class "input-group-btn" ]
+                                [ button [ type_ "button"
+                                         , onClick AddNewCategory
+                                         , class "form-control"
+                                         ] [ text "+" ]
+                                ]
+                            ]
+                        , input [ value model.dashboard.newCategory.description
+                                , onInput UpdateNewCategoryDescription
+                                , class "form-control"
+                                ] []
+                        ]
+                  ]
+                ]                        
+                        
         projectsList =
             let mapper proj =
-                    p [] [ span [ onClick <| OpenProject proj
-                                ] [ text proj.title ]
-                         , input [ type_ "button"
-                                 , value "Edit"
-                                 , onClick <| EditProject proj
-                                 ] []
-                         ]
+                    row
+                    [ column [ Medium Two ] []
+                    , column [ Medium Seven ]
+                          [ input [ type_ "button"
+                                  , value proj.title
+                                  , onClick <| OpenProject proj
+                                  , class "form-control"
+                                  ] []
+                          ]
+                    , column [ Medium Two ]
+                          [ input [ type_ "button"
+                                  , value "Edit"
+                                  , onClick <| EditProject proj
+                                  , class "form-control"
+                                  ] []
+                          ]
+                    , column [ Medium One ] []
+                    ]
             in model.projects
                 |> List.drop (model.dashboard.currentPage * model.dashboard.projectsOnPage)
                 |> List.take model.dashboard.projectsOnPage
-                |> List.map mapper                                 
+                |> List.map mapper
+                |> containerFluid
         rightCol =
-            div ([] ++ centeredAtrs) <| 
-                [ input [ value model.dashboard.queryText
-                        , onInput UpdateQueryText
-                        ] []
-                , input [ type_ "button"
-                        , value "Find"
-                        , onClick LoadProjects
-                        ] []
-                , input [ type_ "button"
-                        , value "Add"
-                        , onClick AddNewProject
-                        ] []
-                , hr [] []
-                ] ++ projectsList ++ 
-                [ input [ type_ "button"
-                        , value "<-"
-                        , onClick PrevPage
-                        , disabled <| model.dashboard.currentPage == 0
-                        ] []
-                , input [ type_ "button"
-                        , value "->"
-                        , onClick NextPage
-                        , disabled <| List.length model.projects
-                            <= model.dashboard.projectsOnPage
-                                * (model.dashboard.currentPage + 1)
-                        ] []
+            containerFluid <|
+                [ row
+                  [ column [ Medium Twelve ] <| 
+                        [ containerFluid
+                          [ row
+                            [ column [ Medium Two ] []
+                            , column [ Medium Six ]
+                                [ div [ class "input-group" ]                               
+                                      [ input [ value model.dashboard.queryText
+                                              , onInput UpdateQueryText
+                                              , class "form-control"
+                                              ] []
+                                      , div [ class "input-group-btn" ]
+                                          [ button [ type_ "button"
+                                                   , onClick LoadProjects
+                                                   , class "form-control"
+                                                   ] [ text "Go" ]
+                                          ]
+                                      ]]
+                            , column [ Medium Two ]
+                                [ input [ type_ "button"
+                                        , value "Add"
+                                        , onClick AddNewProject
+                                        , class "form-control"
+                                        ] []
+                                ]
+                            , column [ Medium Two ] []
+                            ]
+                          ]
+                        , hr [] []
+                        , projectsList
+                        , br [] []
+                        , containerFluid
+                            [ row
+                              [ column [ Medium Four ] []
+                              , column [ Medium Two ]
+                                  [ input [ type_ "button"
+                                          , value "<-"
+                                          , onClick PrevPage
+                                          , disabled <| model.dashboard.currentPage == 0
+                                          , class "form-control"
+                                          ] []
+                                  ]
+                              , column [ Medium Two ]
+                                  [ input [ type_ "button"
+                                          , value "->"
+                                          , onClick NextPage
+                                          , disabled <| List.length model.projects
+                                              <= model.dashboard.projectsOnPage
+                                                  * (model.dashboard.currentPage + 1)
+                                          , class "form-control"
+                                          ] []
+                                  ]
+                              , column [ Medium Five ] []
+                              ]
+                            ]
+                        ]
+                  ]
                 ]
-    in table [] [
-         tr [] [ td [ style "width" "30vw"
-                    , style "vertical-align" "top"
-                    ] [ leftCol ]
-               , td [ style "width" "70vw"
-                    , style "vertical-align" "top"
-                    ] [ rightCol ]
-               ]
+    in container
+        [ row
+          [ column [ ExtraSmall Six, Small Three, Medium Three, Large Three ]
+                [ leftCol ]
+          , column [ ExtraSmall Six, Small Nine, Medium Nine, Large Nine ]
+                [ rightCol ]
+          ]
         ]
 
     

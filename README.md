@@ -3,9 +3,9 @@
 This is ProofHub project.
 
 ### TODO
-- [ ] Search project
+- [x] Search projects
 - [x] Pagination
-- [ ] Update user info
+- [x] Update user info
 - [x] Categories and authors when adding and updating
 - [ ] Test everything
 - [ ] Add Bootstrap and make fancy

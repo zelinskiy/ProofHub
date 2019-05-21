@@ -12,7 +12,10 @@ import Http
 import Process
 import Task
 import Json.Encode as Json
-
+import Bootstrap.Forms exposing (..)
+import Bootstrap.Wells exposing (..)
+import Bootstrap.Buttons exposing (..)
+import Bootstrap.Grid exposing (..)
 
 type Message
     = UpdateSomething String
@@ -80,25 +83,78 @@ view model =
     let variativePart =
             case model.loginView.mode of
                 LoginMode ->
-                    [ button
-                          [ onClick Login ]
-                          [ text "Login" ]
-                    , button
-                          [ onClick <| SwitchMode RegisterMode ]
-                          [ text "Go to register" ]
+                    [ containerFluid
+                          [ row
+                            [ column [ Medium Six ]
+                                  [ btn BtnPrimary
+                                        [ BtnBlock, BtnSmall ]
+                                        []
+                                        [ onClick Login ]
+                                        [ text "Login" ]
+                                  ]
+                            , column [ Medium Six ]
+                                [ btn BtnDefault
+                                    [ BtnBlock, BtnSmall ]
+                                    []
+                                    [ onClick <| SwitchMode RegisterMode ]
+                                    [ text "Go to register" ]
+                                ]
+                            ]
+                          ]
                     ]
                 RegisterMode ->
-                    [ input [ onInput UpdatePasswordConfirmation
-                            , value model.loginView.passConfirmation ] []
-                    , button [ onClick Register ] [ text "Register" ]
-                    , button [ onClick <| SwitchMode LoginMode ] [ text "Go to Login" ]
+                    [ formInput [ onInput UpdatePasswordConfirmation
+                                , value model.loginView.passConfirmation ] []
+                    , br [] []
+                    , containerFluid
+                          [ row
+                            [ column [ Medium Six ]
+                                  [ btn BtnPrimary
+                                        [ BtnBlock, BtnSmall ]
+                                        []
+                                        [ onClick Register ]
+                                        [ text "Register" ]
+                                  ]
+                            , column [ Medium Six ]
+                                [ btn BtnDefault
+                                    [ BtnBlock, BtnSmall ]
+                                    []
+                                    [ onClick <| SwitchMode LoginMode ]
+                                    [ text "Go to login" ]
+                                ]
+                            ]
+                          ]
                     ]
-    in div [] <| [ input [ onInput UpdateUserEmail
-                         , value model.user.email ] []
-                 , input [ onInput UpdateUserPassword
-                         , value model.user.password ] []
-                 ] ++ variativePart
-
+    in div [ style "width" "100vw"
+           , style "height" "60vh"           
+           , style "background-size" "contain"
+           , style "background-image" <| 
+               "url(\"" ++ settings.server ++ "/static/img/back.png"
+                   ++ "\")"
+           ] [ div [ style "padding-top" "15vh" ]
+                   [ container
+                         [ row
+                           [ column  [ Small Four, Medium Four, Large Four ] []
+                           , column  [ Small Four, Medium Four, Large Four ] [
+                                  well WellLarge [] [
+                                       div [] <| 
+                                           [ formInput [ value model.user.email
+                                                       , onInput UpdateUserEmail ] []
+                                           , br [] [] 
+                                           , formInput [ onInput UpdateUserPassword
+                                                       , value model.user.password ] []
+                                           , br [] []
+                                           ] ++ variativePart      
+                                      ]
+                                      
+                                 ]
+                           , column  [ Small Four, Medium Four , Large Four ] []
+                           ]
+                         ]
+                   ]
+             ]
+        
+            
 init : Cmd Message
 init =
     Cmd.batch []
