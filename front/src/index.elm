@@ -79,11 +79,7 @@ main =
     in Browser.document
         { init = \_ -> (defaultModel, Cmd.none)
         , view = \model -> Browser.Document "ProofHub" 
-                 [ div [ style "width" "100vw"
-                       , style "height" "100vh"
-                       , style "background-image" <| 
-                           "url(\"" ++ settings.server ++ "/static/img/back.png"
-                               ++ "\")"
+                 [ div [ 
                        ] [ img [ src <| settings.server ++ "/static/img/logo.png"
                                , style "height" "15vh"
                                , class "img-responsive center-block"

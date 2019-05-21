@@ -12,6 +12,10 @@ import Html.Attributes exposing (..)
 import Http
 import Json.Decode as Decode
 import List.Extra
+import Bootstrap.Forms exposing (..)
+import Bootstrap.Wells exposing (..)
+import Bootstrap.Buttons exposing (..)
+import Bootstrap.Grid exposing (..)
 
 -- TODO:
 -- Separate Proofs from Comments
@@ -172,96 +176,151 @@ view model =
     let editable = model.project.editable
         m = model.proofView
         leftCol =
-            div []
-                [ input [ type_ "button"
-                        , value "Return"
-                        , onClick <| SwitchPage ProjectBrowserPage
-                        ] []
-                , br [] []
-                , if m.isEdited
-                  then input [ value m.proof.title
-                             , onInput <| UpdateProof (\p v -> { p | title = v })
-                             , disabled <| not editable
-                             ] []
-                  else b [] [ text m.proof.title ]
-                , input [ type_ "button"
-                        , value <| if m.isEdited
-                                   then "Save"
-                                   else "Edit"
-                        , onClick <| if m.isEdited
-                                     then SaveProof
-                                     else ToggleEditMode
-                        , disabled <| not editable
-                        ] []
-                , input [ type_ "button"
-                        , value "Remove"
-                        , onClick RemoveProof
-                        , disabled <| not editable
-                        ] []
-                , if m.isEdited
-                  then p [] [ input [ value m.proof.shortDescription
-                                    , onInput <| UpdateProof (\p v -> { p | shortDescription = v })
-                                    , disabled <| not editable
-                                    ] []
-                            ]
-                  else p [] [ text m.proof.shortDescription ]
-                , if m.isEdited
-                  then p [] [ textarea [ onInput <| UpdateProof (\p v -> { p | longDescription = v })
-                                       , disabled <| not editable
-                                       ] [ text m.proof.longDescription ] ]
-                  else p [] [ text m.proof.longDescription ]
-                , if m.isEdited
-                  then p [] [ textarea [ onInput <| UpdateProof (\p v -> { p | text = v })
-                                       , disabled <| not editable
-                                       ] [ text m.proof.text ] ]
-                  else p [] [ text m.proof.text ]
-                ]
+            containerFluid
+            [ row [ column
+                        [ Medium Two ]
+                        [ input [ type_ "button"
+                                , value "Return"
+                                , onClick <| SwitchPage ProjectBrowserPage
+                                , class "form-control"
+                                ] []
+                        ]
+                  ]
+            , hr [] []
+            , row [ column
+                        [ Medium Eight ]
+                        [ input [ value m.proof.title
+                                , onInput <| UpdateProof (\p v -> { p | title = v })
+                                , readonly <| not (editable && m.isEdited)
+                                , class "form-control"
+                                ] []
+                        ]
+                  , column
+                      [ Medium Two ]
+                      [ input [ type_ "button"
+                              , value <| if m.isEdited
+                                         then "Save"
+                                         else "Edit"
+                              , onClick <| if m.isEdited
+                                           then SaveProof
+                                           else ToggleEditMode
+                              , disabled <| not editable
+                              , class "form-control"
+                              ] []
+                      ]
+                  , column
+                      [ Medium Two ]
+                      [ input [ type_ "button"
+                              , value "Remove"
+                              , onClick RemoveProof
+                              , disabled <| not editable
+                              , class "form-control"
+                              ] []
+                      ]
+                  ]
+            , br [] []
+            , row [ column [ Medium Twelve ]
+                        [ input [ value m.proof.shortDescription
+                                , onInput <| UpdateProof (\p v -> { p | shortDescription = v })
+                                , readonly <| not (editable && m.isEdited)
+                                , class "form-control"
+                                ] []
+                        ]
+                  ]
+            , br [] []
+            , row [ column [ Medium Twelve ]
+                        [ textarea [ onInput <| UpdateProof (\p v -> { p | longDescription = v })
+                                   , readonly <| not (editable && m.isEdited)
+                                   , class "form-control"
+                                   , rows 6
+                                   ] [ text m.proof.longDescription ]
+                        ]
+                        
+                  ]
+            , br [] []
+            , row [ column [ Medium Twelve ]
+                        [ textarea [ onInput <| UpdateProof (\p v -> { p | text = v })
+                                   , readonly <| not (editable && m.isEdited)
+                                   , style "height" "60vh"
+                                   , class "form-control"
+                                   ] [ text m.proof.text ]
+                        ]
+                  ]
+            ]                        
         rightCol =
             let comments =
                     m.comments
-                        |> List.map (\c -> 
-                                         p [] [ text <| c.userId ++ " wrote: "
-                                              , input [ type_ "button"
-                                                      , value <| if c.isEdited
-                                                                 then "Save"
-                                                                 else "Edit"
-                                                      , onClick <| if c.isEdited
-                                                                   then SaveComment c.id
-                                                                   else UpdateComment c.id (\x _ -> { x | isEdited = True }) ""
-                                                      , disabled <| c.userId /= model.user.email
-                                                      ] []
-                                              , input [ type_ "button"
-                                                      , value "Delete"
-                                                      , onClick <| RemoveComment c.id
-                                                      , disabled <| c.userId /= model.user.email
-                                                      ] []
+                        |> List.map (\c ->
+                                         containerFluid 
+                                              [ row [ column
+                                                          [ ExtraSmall Six, Small Six, Medium Six, Large Six ]
+                                                          [ text <| c.userId ++ " wrote: " ]
+                                                    , column
+                                                          [ ExtraSmall Three, Small Three, Medium Three, Large Three ]
+                                                          [ input [ type_ "button"
+                                                                  , value <| if c.isEdited
+                                                                             then "Save"
+                                                                             else "Edit"
+                                                                  , onClick <| if c.isEdited
+                                                                               then SaveComment c.id
+                                                                               else UpdateComment c.id (\x _ -> { x | isEdited = True }) ""
+                                                                  , readonly <| not (c.userId == model.user.email && c.isEdited)
+                                                                  , class "form-control"
+                                                                  ] []
+                                                          ]
+                                                    , column
+                                                          [ ExtraSmall Three, Small Three, Medium Three, Large Three ]
+                                                          [ input [ type_ "button"
+                                                                  , value "Delete"
+                                                                  , onClick <| RemoveComment c.id
+                                                                  , disabled <| not (c.userId == model.user.email && c.isEdited)
+                                                                  , class "form-control"
+                                                                  ] []
+                                                          ]
+                                                    ]
                                               , br [] []
-                                              , if c.isEdited
-                                                then input [ value c.text
-                                                           , onInput <| UpdateComment c.id <| \x v -> { x | text = v }
-                                                           , disabled <| c.userId /= model.user.email
-                                                           ] []
-                                                else text c.text
-                                              ]
-                                    )
+                                              , row [ column
+                                                          [ ExtraSmall Twelve, Small Twelve, Medium Twelve, Large Twelve ]
+                                                          [ textarea [ onInput <| UpdateComment c.id <| \x v -> { x | text = v }
+                                                                     , readonly <| not (c.userId == model.user.email && c.isEdited)
+                                                                     , rows 3
+                                                                     , class "form-control"
+                                                                     ] [ text c.text ]
+                                                          ]
+                                                    ]
+                                              , br [] []
+                                              , br [] []
+                                              ])
             in div []
                 <| comments
-                    ++ [ textarea [ onInput <| UpdateNewComment <| \x v -> { x | text = v } ]
-                             [ text m.newComment.text ]
-                       , br [] []
-                       , input [ type_ "button"
-                               , value "Send"
-                               , onClick AddComment
-                               ] []
+                    ++ [ containerFluid
+                             [ row
+                               [ column [ ExtraSmall Twelve, Small Twelve, Medium Twelve, Large Twelve ]
+                                     [ div [ class "input-group" ]                               
+                                           [ textarea [ onInput <| UpdateNewComment <| \x v -> { x | text = v }
+                                                      , class "form-control"
+                                                      , style "height" "150px"
+                                                   ] [  text m.newComment.text ]
+                                           , div [ class "input-group-btn" ]
+                                               [ button [ type_ "button"
+                                                        , onClick AddComment
+                                                        , style "height" "150px"
+                                                        , style "width" "50px"
+                                                        , class "form-control"
+                                                        ] [ text "+" ]
+                                               ]
+                                           ]
+                                     ]
+                               ]
+                             ]
                        ]
-    in table [] [
-         tr [] [ td [ style "width" "62vw"
-                    , style "vertical-align" "top"
-                    ] [ leftCol ]
-               , td [ style "width" "38vw"
-                    , style "vertical-align" "top"
-                    ] [ rightCol ]
-               ]
+    in container
+        [ row
+          [ column [ ExtraSmall Six, Small Eight, Medium Eight, Large Eight ]
+                [ leftCol ]
+          , column [ ExtraSmall Six, Small Four, Medium Four, Large Four ]
+                [ rightCol ]
+          ]
         ]
 
 init : Cmd Message

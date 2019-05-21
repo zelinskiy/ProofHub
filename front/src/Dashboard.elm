@@ -491,6 +491,7 @@ view model =
                                   , onClick <| EditProject proj
                                   , class "form-control"
                                   ] []
+                          , br [] []
                           ]
                     , column [ Medium One ] []
                     ]
@@ -506,7 +507,7 @@ view model =
                         [ containerFluid
                           [ row
                             [ column [ Medium Two ] []
-                            , column [ Medium Six ]
+                            , column [ Medium Seven ]
                                 [ div [ class "input-group" ]                               
                                       [ input [ value model.dashboard.queryText
                                               , onInput UpdateQueryText
@@ -526,7 +527,7 @@ view model =
                                         , class "form-control"
                                         ] []
                                 ]
-                            , column [ Medium Two ] []
+                            , column [ Medium One ] []
                             ]
                           ]
                         , hr [] []

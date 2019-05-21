@@ -13,6 +13,10 @@ import Http
 import List.Extra
 import Maybe.Extra
 import Json.Decode as Decode
+import Bootstrap.Forms exposing (..)
+import Bootstrap.Wells exposing (..)
+import Bootstrap.Buttons exposing (..)
+import Bootstrap.Grid exposing (..)
 
 
 type Message
@@ -154,9 +158,19 @@ view model =
                 |> List.filter (\p ->
                                     Just p.directoryId
                                     == Maybe.map .id model.projectBrowser.directory)
-                |> List.map (\pf ->
-                                 p [ onClick <| OpenProof pf
-                                 ] [ text pf.title ])
+                |> List.map (\pf ->                                 
+                                 row
+                                 [ column [ Medium Eight ]
+                                       [ input [ type_ "button"
+                                               , onClick <| OpenProof pf
+                                               , class "form-control"
+                                               , value pf.title
+                                               ] []
+                                       , br [] []
+                                       ]
+                                 ])
+                |> containerFluid 
+                    
         directories =
             model.directories
                 |> List.filter (\d ->
@@ -166,44 +180,78 @@ view model =
                                         Just pd ->
                                             d.parentDirectoryId == Just pd.id)
                 |> List.map (\d ->
-                                 p [] [ if d.isEdited
-                                        then input [ value d.title
-                                                   , onInput <| UpdateDirectoryName d.id
-                                                   , disabled <| not editable
-                                                   ] []
-                                        else span [ onClick <| OpenDirectory <| Just d ]
-                                            [ text <| d.title ++ " " ++ String.fromInt d.id ]
-                                      , input [ type_ "button"
+                                 row
+                                 [ column [ Medium Eight ]
+                                       [ if d.isEdited
+                                         then input [ value d.title
+                                                    , class "form-control"
+                                                    , onInput <| UpdateDirectoryName d.id
+                                                    , disabled <| not editable
+                                                    ] []
+                                         else well WellSmall
+                                             [ onClick <| OpenDirectory (Just d) ]
+                                             [ text <| d.title ]
+                                       ]
+                                 , column [ Medium Two ]
+                                     [ input [ type_ "button"
                                               , value <| if d.isEdited then "Save" else "Edit"
                                               , onClick <| ToggleEditDirectory d.id
+                                             , class "form-control"
                                               , disabled <| not editable
                                               ] []
-                                      , input [ type_ "button"
-                                              , value "Remove"
-                                              , onClick <| RemoveDirectory d.id
-                                              , disabled <| not editable
-                                              ] []
-                                      ])
-    in div [] <| 
-        [ input [ type_ "button"
-                , value "Return"
-                , onClick MoveDirectoryUp
-                ] []
-        , input [ type_ "button"
-                , value "Add directory"
-                , onClick AddDirectory
-                , disabled <| not editable
-                ] []
-        , input [ type_ "button"
-                , value "Add proof"
-                , onClick AddProof
-                , disabled <| Maybe.Extra.isNothing model.projectBrowser.directory || not editable
-                ] []
-        , hr [] []
-        ] ++ directories ++ 
-        [ hr [] []
-        ] ++ proofs
-          
+                                     ]
+                                 , column [ Medium Two ]
+                                     [ input [ type_ "button"
+                                             , value "Remove"
+                                             , onClick <| RemoveDirectory d.id
+                                             , class "form-control"
+                                             , disabled <| not editable
+                                             ] []
+                                     , br [] []
+                                     ]
+                                 ])
+                |> containerFluid 
+    in container
+        [ row
+          [ column [ Medium Two ] []
+          , column [ Medium Ten ]
+              [ containerFluid
+                [ row
+                  [ column [ Medium Two ]
+                        [ input [ type_ "button"
+                                , value "Return"
+                                , class "form-control"
+                                , onClick MoveDirectoryUp
+                                ] []
+                        ]
+                  , column [ Medium Three ]
+                      [ input [ type_ "button"
+                              , value "Add directory"
+                              , onClick AddDirectory
+                              , class "form-control"
+                              , disabled <| not editable
+                              ] []
+                      ]
+                  , column [ Medium Three ]
+                      [ input [ type_ "button"
+                              , value "Add proof"
+                              , onClick AddProof
+                              , class "form-control"
+                              , disabled
+                                    <| Maybe.Extra.isNothing model.projectBrowser.directory || not editable
+                              ] []
+                      ]
+                  ]
+                ]
+              , br [] []
+              , directories
+              , hr [] []
+              , proofs 
+              ]
+          , column [ Medium Two ] []
+          ]
+        ]
+        
 
 init : Cmd Message
 init =
