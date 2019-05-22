@@ -347,7 +347,9 @@ view model =
                                           ] []
                               , br [] []
                               ]
-                          else well WellSmall [] [ text model.user.email ]
+                          else well WellSmall
+                              [ style "text-align" "center" ]
+                              [ text model.user.email ]
                         , if model.dashboard.editingUser
                           then div []
                               [ formInput [ value model.user.password
@@ -355,24 +357,26 @@ view model =
                                           ] []
                               , br [] []
                               ]
-                          else well WellSmall [] [ text model.user.password ]
+                          else well WellSmall
+                              [ style "text-align" "center" ]
+                              [ text <| String.repeat (String.length model.user.password) "*" ]
                         , containerFluid
                             [ row
                               [ column [ Large Six]
                                     [ if  model.dashboard.editingUser
-                                      then btn BtnDefault
+                                      then btn BtnSuccess
                                           [ BtnBlock, BtnSmall ]
                                           []
                                           [ onClick SaveUser ]
                                           [ text "Save" ]
-                                      else btn BtnDefault
+                                      else btn BtnPrimary
                                           [ BtnBlock, BtnSmall ]
                                           []
                                           [ onClick BeginEditingUser
                                           ] [ text "Edit"]
                                     ]
                               , column [ Large Six]
-                                  [ btn BtnDefault
+                                  [ btn BtnDanger
                                         [ BtnBlock, BtnSmall ]
                                         []
                                         [ onClick <| SwitchPage LoginViewPage
@@ -487,7 +491,9 @@ view model =
                           ]
                     , column [ Medium Two ]
                           [ input [ type_ "button"
-                                  , value "Edit"
+                                  , value <| if List.member model.user.email proj.authorsEmails
+                                             then "Edit"
+                                             else "View"
                                   , onClick <| EditProject proj
                                   , class "form-control"
                                   ] []
@@ -516,7 +522,7 @@ view model =
                                       , div [ class "input-group-btn" ]
                                           [ button [ type_ "button"
                                                    , onClick LoadProjects
-                                                   , class "form-control"
+                                                   , class "form-control btn-primary"
                                                    ] [ text "Go" ]
                                           ]
                                       ]]
@@ -524,7 +530,7 @@ view model =
                                 [ input [ type_ "button"
                                         , value "Add"
                                         , onClick AddNewProject
-                                        , class "form-control"
+                                        , class "form-control btn-success"
                                         ] []
                                 ]
                             , column [ Medium One ] []

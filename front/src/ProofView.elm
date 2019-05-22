@@ -205,7 +205,7 @@ view model =
                                            then SaveProof
                                            else ToggleEditMode
                               , disabled <| not editable
-                              , class "form-control"
+                              , class "form-control btn-info"
                               ] []
                       ]
                   , column
@@ -214,7 +214,7 @@ view model =
                               , value "Remove"
                               , onClick RemoveProof
                               , disabled <| not editable
-                              , class "form-control"
+                              , class "form-control btn-danger"
                               ] []
                       ]
                   ]

@@ -10,6 +10,10 @@ import Html.Events exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Json.Decode as Decode
+import Bootstrap.Forms exposing (..)
+import Bootstrap.Wells exposing (..)
+import Bootstrap.Buttons exposing (..)
+import Bootstrap.Grid exposing (..)
 
 type Message
     = SwitchPage Page
@@ -108,99 +112,161 @@ view : Model -> Html Message
 view model =
     let editable = model.project.editable
         leftCol =
-            div []
-                [ input [ type_ "button"
-                        , value "Return"
-                        , onClick <| SwitchPage DashboardPage
-                        ] []
+            containerFluid
+                [ row
+                      [ column
+                            [ Medium Three ]
+                            [ input [ type_ "button"
+                                    , value "Return"
+                                    , onClick <| SwitchPage DashboardPage
+                                    , class "form-control"
+                                    ] []
+                            ]
+                      , column
+                            [ Medium Three ]
+                            []
+                      , column
+                            [ Medium Three ]
+                            [ input [ type_ "button"
+                                    , value <| if model.project.id == -1
+                                               then "Add"
+                                               else "Update"
+                                    , onClick Save
+                                    , disabled <| not editable
+                                    , class "form-control btn-info"
+                                    ] []
+                            ]
+                      , column
+                            [ Medium Three ]
+                            [ input [ type_ "button"
+                                    , value "Delete"
+                                    , onClick Remove
+                                    , disabled <| not editable
+                                    , class "form-control btn-danger"
+                                    ] []
+                            ]
+                      ]
+                , hr [] []
+                , row [ column
+                            [ Medium Twelve ]
+                            [ input [ value model.project.title
+                                    , onInput UpdateTitle
+                                    , disabled <| not editable
+                                    , class "form-control"
+                                    ] []
+                            ]
+                      ]
                 , br [] []
-                , input [ value model.project.title
-                        , onInput UpdateTitle
-                        , disabled <| not editable
-                        ] []
-                , input [ type_ "button"
-                        , value <| if model.project.id == -1
-                                   then "Add"
-                                   else "Update"
-                        , onClick Save
-                        , disabled <| not editable
-                        ] []
-                , input [ type_ "button"
-                        , value "Remove"
-                        , onClick Remove
-                        , disabled <| not editable
-                        ] []
+                , row [ column
+                            [ Medium Twelve ]
+                            [ input [ value model.project.shortDescription
+                                    , onInput UpdateShortDescription
+                                    , disabled <| not editable
+                                    , class "form-control"
+                                    ] []
+                            ]
+                      ]
                 , br [] []
-                , input [ value model.project.shortDescription
-                        , onInput UpdateShortDescription
-                        , disabled <| not editable
-                        ] []
-                , br [] []
-                , textarea [ onInput UpdateLongDescription
-                           , disabled <| not editable ]
-                    [ text model.project.longDescription ]
-                , br [] []
+                , row [ column
+                            [ Medium Twelve ]
+                            [ textarea [ onInput UpdateLongDescription
+                                       , disabled <| not editable
+                                       , class "form-control"
+                                       ]
+                                  [ text model.project.longDescription ]
+                            ]
+                      ]
                 ]
         categories =
             model.project.categoriesTitles
-                |> List.map (\x -> input [ type_ "button"
-                                         , onClick (RemoveCategory x)
-                                         , disabled <| not editable
-                                         , value x
-                                         ] [])
-                |> List.intersperse (br [] [])
+                |> List.map (\x ->
+                                 row [ column
+                                           [ Medium Twelve ]
+                                           [ input [ type_ "button"
+                                                   , onClick (RemoveCategory x)
+                                                   , disabled <| not editable
+                                                   , value x
+                                                   , class "form-control"
+                                                   ] []
+                                           , br [] []
+                                           ]
+                                     ])
         authors =
             model.project.authorsEmails
-                |> List.map (\x -> input [ type_ "button"
-                                         , onClick (RemoveAuthor x)
-                                         , disabled <| not editable
-                                         , value x
-                                         ] [])
-                |> List.intersperse (br [] [])
+                |> List.map (\x ->
+                                 row [ column
+                                           [ Medium Twelve ]
+                                           [ input [ type_ "button"
+                                                   , onClick (RemoveAuthor x)
+                                                   , disabled <| not editable
+                                                   , value x
+                                                   , class "form-control"
+                                                   ] []
+                                           , br [] []
+                                           ]
+                                     ])
         rightCol =
-            div [] <| 
-                [ select
-                      [ value <| if List.member model.project.proverId <| List.map .title model.provers
-                                 then model.project.proverId 
-                                 else "Pick a prover"
-                      , onInput UpdateProver
-                      , disabled <| not editable
-                      ] <| (\opts -> option [] [ text "Pick a prover" ] :: opts)
-                      <| List.map (option [] << List.singleton << text << .title)
-                      <| model.provers
-                , br [] []
-                , br [] []
+            containerFluid <| 
+                [ row [ column
+                            [ Medium Twelve ]
+                            [ select
+                                  [ value
+                                        <| if List.member model.project.proverId
+                                            (List.map .title model.provers)
+                                           then model.project.proverId 
+                                           else "Pick a prover"
+                                  , onInput UpdateProver
+                                  , disabled <| not editable
+                                  , class "form-control"
+                                  ] <| (\opts -> option [] [ text "Pick a prover" ] :: opts)
+                                  <| List.map (option [] << List.singleton << text << .title)
+                                  <| model.provers
+                            ]
+                      ]
+                , hr [] []
                 ] ++ categories ++
-                [ br [] []
-                , select
-                      [ value "Add category"
-                      , onInput AddCategory
-                      , disabled <| not editable
-                      ] <| (\opts -> option [] [ text "Add category" ] :: opts)
-                      <| List.map (option [] << List.singleton << text << .title)
-                      <| List.filter (\c -> not <| List.member c.title model.project.categoriesTitles)
-                      <| model.categories
-                , br [] []
-                , br [] []
+                [ row [ column
+                            [ Medium Twelve ]
+                            [ select
+                                  [ value "Add category"
+                                  , onInput AddCategory
+                                  , disabled <| not editable
+                                  , class "form-control"
+                                  ] <| (\opts -> option [] [ text "Add category" ] :: opts)
+                                  <| List.map (option [] << List.singleton << text << .title)
+                                  <| List.filter (\c -> not
+                                                      <| List.member c.title model.project.categoriesTitles)
+                                  <| model.categories
+                            ]
+                      ]
+                , hr [] []
                 ] ++ authors ++ 
-                [ br [] []
-                , input [ value model.projectView.newAuthor
-                        , onInput UpdateNewAuthor
-                        , autocomplete True
-                        ] []
-                , input [ type_ "button"
-                        , value "+"
-                        , onClick AddAuthor
-                        ] []
+                [ div [ class "input-group" ]                               
+                    [ input [ value model.projectView.newAuthor
+                            , onInput UpdateNewAuthor
+                            , autocomplete True
+                            , class "form-control"
+                            ] []
+                    , div [ class "input-group-btn" ]
+                        [ input [ type_ "button"
+                                , value "+"
+                                , onClick AddAuthor
+                                , class "form-control"
+                                ] []
+                        ]
+                    ]
                 ]
-    in table [] [
-         tr [] [ td [ style "width" "70vw"
-                    , style "vertical-align" "top"
-                    ] [ leftCol ]
-               , td [ style "width" "30vw"
-                    , style "vertical-align" "top"
-                    ] [ rightCol ]
-               ]
+    in container
+        [ row
+          [ column [ ExtraSmall One, Small Two, Medium Two, Large Two ]
+                []
+          , column [ ExtraSmall Five, Small Five, Medium Five, Large Five ]
+                [ leftCol ]
+          , column [ ExtraSmall Five, Small Three, Medium Three, Large Three ]
+                [ rightCol ]
+          , column [ ExtraSmall One, Small Two, Medium Two, Large Two ]
+                []
+          ]
         ]
 
         

@@ -93,16 +93,19 @@ server = searchProjects
       db $ insertMany
         $ map (\c -> ProjectCategory pid c)
         $ categories p
-      return pid
+      return pid   
     getProject pid = do
       mbP <- db $ getEntity pid
       case mbP of
         Nothing -> return Nothing
         Just p -> do
           pAuthors <- db $ map (projectAuthorUserId . entityVal)
-                      <$> selectList [ ProjectAuthorProjectId ==. entityKey p ] []
-          pCats <- db $ map (projectCategoryCategoryId . entityVal)
-                   <$> selectList [ ProjectCategoryProjectId ==. entityKey p ] []
+                      <$> selectList [ ProjectAuthorProjectId
+                                       ==. entityKey p ] []
+          pCats <- db $ map (projectCategoryCategoryId
+                             . entityVal)
+                   <$> selectList [ ProjectCategoryProjectId
+                                    ==. entityKey p ] []
           return $ Just $ ExtProject p pAuthors pCats
     deleteProject =
       db . deleteCascade

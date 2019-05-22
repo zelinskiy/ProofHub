@@ -162,8 +162,9 @@ view model =
                                  row
                                  [ column [ Medium Eight ]
                                        [ input [ type_ "button"
+                                               , style "text-align" "left"
                                                , onClick <| OpenProof pf
-                                               , class "form-control"
+                                               , class "form-control btn-link"
                                                , value pf.title
                                                ] []
                                        , br [] []
@@ -194,17 +195,17 @@ view model =
                                        ]
                                  , column [ Medium Two ]
                                      [ input [ type_ "button"
-                                              , value <| if d.isEdited then "Save" else "Edit"
-                                              , onClick <| ToggleEditDirectory d.id
+                                             , value <| if d.isEdited then "Save" else "Edit"
+                                             , onClick <| ToggleEditDirectory d.id
                                              , class "form-control"
-                                              , disabled <| not editable
-                                              ] []
+                                             , disabled <| not editable
+                                             ] []
                                      ]
                                  , column [ Medium Two ]
                                      [ input [ type_ "button"
                                              , value "Remove"
                                              , onClick <| RemoveDirectory d.id
-                                             , class "form-control"
+                                             , class "form-control btn-danger"
                                              , disabled <| not editable
                                              ] []
                                      , br [] []
